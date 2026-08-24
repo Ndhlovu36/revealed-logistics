@@ -1,2 +1,2 @@
 # revealed-logistics
-PiOS Logistics and delivery app for Gauteng, South 
+PiOS Logistics and delivery app for South Africa 
