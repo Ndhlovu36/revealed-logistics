@@ -1,0 +1,51 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Revealed Logistics - Deliver with Pi</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://sdk.minepi.com/pi-sdk.js"></script>
+<style>
+body{font-family:Arial;background:#e3f2fd;margin:0}
+.header{background:#1565c0;color:white;padding:20px;text-align:center}
+.card{background:white;margin:15px;padding:15px;border-radius:12px}
+.btn{background:#1565c0;color:white;padding:12px;border:none;border-radius:8px;width:100%;font-size:17px}
+input,select,textarea{width:100%;padding:10px;margin:6px 0;border:1px solid #ccc;border-radius:6px}
+</style>
+</head>
+<body>
+<div class="header">
+<h1>🚚 Revealed Logistics</h1>
+<p>Gauteng Delivery Powered by Pi</p>
+</div>
+<div class="card">
+<h3>Send Parcel</h3>
+<input id="pickup" placeholder="Pickup Location - e.g. Johannesburg CBD">
+<input id="drop" placeholder="Drop Location - e.g. Pretoria">
+<select id="type"><option>Small Parcel - 1 Pi</option><option>Medium Box - 2.5 Pi</option><option>Large Cargo - 5 Pi</option></select>
+<textarea id="notes" placeholder="Parcel details"></textarea>
+<p>Delivery Fee: <b id="fee">1 Pi</b></p>
+<button class="btn" onclick="payDelivery()">Pay & Request Delivery with Pi</button>
+<p id="status"></p>
+</div>
+<div class="card">
+<p>🔗 Connected Apps:<br>🚌 Revelation Bus for inter-city cargo<br>🛒 Gauteng Shopping Hub for last-mile delivery</p>
+</div>
+<script>
+const Pi=window.Pi; Pi.init({version:"2.0",sandbox:false});
+document.getElementById('type').addEventListener('change',function(){let v=this.value; if(v.includes('Small'))document.getElementById('fee').innerText='1 Pi'; if(v.includes('Medium'))document.getElementById('fee').innerText='2.5 Pi'; if(v.includes('Large'))document.getElementById('fee').innerText='5 Pi';});
+async function payDelivery(){
+ let feeText=document.getElementById('fee').innerText; let amount=parseFloat(feeText);
+ try{
+  let auth=await Pi.authenticate(['payments','username'],()=>{});
+  Pi.createPayment({amount:amount, memo:"Revealed Logistics Delivery "+document.getElementById('pickup').value+" to "+document.getElementById('drop').value, metadata:{pickup:pickup.value, drop:drop.value}},{
+   onReadyForServerApproval:(id)=>{status.innerText="Approving "+id},
+   onReadyForServerCompletion:(id,txid)=>{status.innerText="✅ Driver Assigned! TX:"+txid+" @"+auth.user.username; alert("Delivery Booked!");},
+   onCancel:()=>{status.innerText="Cancelled"},
+   onError:(e)=>{status.innerText=e}
+  });
+ }catch(e){status.innerText=e.message}
+}
+</script>
+</body>
+</html>
