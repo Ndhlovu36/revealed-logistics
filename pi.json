@@ -1,0 +1,13 @@
+{
+  "app_name": "Revealed Logistics",
+  "display_name": "Revealed Logistics",
+  "description": "Gauteng's on-demand delivery platform powered by Pi. Same-day parcel delivery, e-commerce fulfillment for Gauteng Shopping Hub, and bus cargo via Revelation Bus Company. Pay delivery fees with Pi.",
+  "category": "Logistics & Delivery",
+  "tags": ["logistics", "delivery", "gauteng", "pi-payment", "courier"],
+  "developer": "Ndhlovu36",
+  "version": "1.0.0",
+  "ecosystem_apps": ["Revelation Bus Company", "Gauteng Shopping Hub"],
+  "features": ["Pi Payments", "Real-time Tracking", "Same-day Delivery", "Bus Cargo Integration"],
+  "region": "Gauteng, South Africa",
+  "hackathon_track": "Real World Utility"
+}
