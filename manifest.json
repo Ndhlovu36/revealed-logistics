@@ -1,0 +1,16 @@
+{
+  "name": "Revealed Logistics",
+  "short_name": "RevealedLog",
+  "description": "Same-day delivery across Gauteng powered by Pi",
+  "start_url": "/revealed-logistics/",
+  "display": "standalone",
+  "background_color": "#ff6f00",
+  "theme_color": "#ff6f00",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3774/3774098.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
