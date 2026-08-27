@@ -46,7 +46,18 @@ footer{background:#001a4d;color:#aaa;text-align:center;padding:30px 20px;margin-
 <button class="btn" style="background:#fff" onclick="payWithPi('Logistics Service')">💳 Pay Delivery with Pi</button>
 <p id="piStatus" class="status"></p>
 </div>
+<head>
+  <script src="https://sdk.minepi.com/pi-sdk.js"></script>  <-- YOU PASTED HERE
+</head>
 
+<body>
+  <h1>My Products</h1>
+  <p>Price: 1 Pi</p>
+
+  <button id="payWithPi">Pay with Pi</button>  <-- PASTE NEW BUTTON HERE
+
+  <footer>...</footer>  <-- YOUR OLD FOOTER HERE
+</body>
 <div class="section" id="services">
 <h2>Our Services</h2><br>
 <div class="grid">
@@ -100,7 +111,18 @@ let id = document.getElementById('trackId').value;
 if(!id){ alert("Enter tracking number"); return; }
 document.getElementById('trackResult').innerText="📦 Tracking " + id + ": In Transit - Arriving tomorrow 14:00 (Demo). For real tracking contact support.";
 }
-</script>
+</script><head>
+  <script src="https://sdk.minepi.com/pi-sdk.js"></script>  <-- YOU PASTED HERE
+</head>
+
+<body>
+  <h1>My Products</h1>
+  <p>Price: 1 Pi</p>
+
+  <button id="payWithPi">Pay with Pi</button>  <-- PASTE NEW BUTTON HERE
+
+  <footer>...</footer>  <-- YOUR OLD FOOTER HERE
+</body>
 </body><footer style="background:#111;color:#fff;padding:20px;text-align:center;margin-top:50px;font-family:Arial;line-height:1.6;">
   <p><b>🇿🇦 Ndhlovu36 Ecosystem - Johannesburg, Gauteng</b></p>
   <p>
