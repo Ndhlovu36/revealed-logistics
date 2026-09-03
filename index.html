@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>REVEALED AGRI & LOGISTICS - Pay with Pi Only</title>
+<script src="https://sdk.minepi.com/pi-sdk.js"></script>
+<script>Pi.init({ version: "2.0", sandbox: true }); // false for Mainnet</script>
+<style>
+body{margin:0;font-family:Arial;background:#0a1931;color:white;text-align:center}
+.header{background:#0a1931;padding:20px;border-bottom:3px solid #d4af37}
+.logo{font-size:26px;font-weight:bold;color:#d4af37}
+.card{background:white;color:#0a1931;margin:15px auto;max-width:420px;border-radius:15px;padding:18px;text-align:left}
+label{font-weight:bold;margin-top:10px;display:block}
+select,input{width:100%;padding:12px;margin-top:5px;border-radius:8px;border:1px solid #ccc}
+.btn{width:100%;padding:15px;margin-top:15px;border:none;border-radius:10px;font-size:17px;font-weight:bold}
+.btn-pi{background:#d4af37;color:#0a1931}
+.btn-pay{background:#0a1931;color:#d4af37;border:2px solid #d4af37}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.item{border:1px solid #eee;border-radius:10px;padding:10px;text-align:center}
+.pi-tag{background:#d4af37;color:#0a1931;padding:3px 8px;border-radius:12px;font-size:11px;font-weight:bold}
+</style>
+</head>
+<body>
+<div class="header">
+<div class="logo">🌾 REVEALED AGRI & LOGISTICS</div>
+<div style="color:#a0c4ff">Farm Produce & Transport - Pay with Pi Only</div>
+<div style="margin-top:8px"><span class="pi-tag">π Pi Only</span> <span class="pi-tag">Powered by Pi Network</span></div>
+</div>
+
+<div class="card">
+<div class="grid">
+<div class="item"><b>Maize 50kg</b><br>5 Pi<br><button class="btn btn-pi" style="padding:8px;font-size:14px" onclick="payProduct('Maize 50kg',5)">Buy 5 Pi</button></div>
+<div class="item"><b>Tautliner Load</b><br>25 Pi<br><button class="btn btn-pi" style="padding:8px;font-size:14px" onclick="payProduct('Tautliner Transport',25)">Book 25 Pi</button></div>
+<div class="item"><b>Reefer Cold</b><br>30 Pi<br><button class="btn btn-pi" style="padding:8px;font-size:14px" onclick="payProduct('Reefer Transport',30)">Book 30 Pi</button></div>
+<div class="item"><b>Side Tipper</b><br>28 Pi<br><button class="btn btn-pi" style="padding:8px;font-size:14px" onclick="payProduct('Side Tipper',28)">Book 28 Pi</button></div>
+</div>
+
+<label>Customer Name</label>
+<input id="cust" placeholder="Full Name">
+
+<button class="btn btn-pi" onclick="loginPi()">🔐 Login with Pi</button>
+<div id="user" style="text-align:center;color:green;font-weight:bold;margin-top:8px"></div>
+<div id="status" style="text-align:center;margin-top:10px;font-size:13px"></div>
+<div style="font-size:11px;color:#666;text-align:center;margin-top:10px">100% Pi Payment Only • Secure • Instant • 24/7 Support</div>
+</div>
+
+<script>
+let user=null;
+function loginPi(){ Pi.authenticate(['username','payments'],()=>{}).then(a=>{user=a.user; document.getElementById('user').innerText="Welcome @"+a.user.username+" ✅";}).catch(()=>{alert("Open in Pi Browser");}); }
+function payProduct(name,amt){
+ if(!user){alert("Login with Pi first");return;}
+ Pi.createPayment({amount:amt,memo:name,metadata:{product:name}},{
+  onReadyForServerApproval:id=>{document.getElementById('status').innerText="Approving "+name+"..."; fetch('/api/approve-payment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentId:id})});},
+  onReadyForServerCompletion:(id,txid)=>{ fetch('/api/complete-payment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentId:id,txid:txid})}).then(()=>{document.getElementById('status').innerText="✅ "+name+" Paid "+amt+" Pi Successful!";});},
+  onCancel:id=>{document.getElementById('status').innerText="Cancelled";},
+  onError:e=>{document.getElementById('status').innerText="Error "+e;}
+ });
+}
+</script>
+</body>
+</html>
