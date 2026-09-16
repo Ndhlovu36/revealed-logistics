@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Revealed Logistics | 8 Truck Types | JHB</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;background:#f0f4ff;color:#0a1931}
+.header{background:#0a1931;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100}
+.logo{font-weight:900;color:#ffcc00;font-size:19px;letter-spacing:.5px}.nav{display:flex;gap:10px}
+.btn{padding:8px 14px;border-radius:20px;border:none;font-weight:800;font-size:12px;cursor:pointer;text-decoration:none;display:inline-block}
+.btn-yellow{background:#ffcc00;color:#0a1931}.btn-blue{background:#0052cc;color:#fff}.btn-outline{border:1px solid #fff;color:#fff;background:transparent}
+.hero{background:linear-gradient(135deg,#0a1931 0%,#12367a 60%,#0052cc 100%);color:#fff;text-align:center;padding:55px 18px}
+.hero h1{font-size:30px;line-height:1.1}.hero h1 span{color:#ffcc00}.hero p{margin:14px 0 20px;opacity:.9;font-size:14px}
+.section{max-width:1200px;margin:auto;padding:28px 14px}
+.h2{text-align:center;font-size:24px;font-weight:900}.sub{text-align:center;color:#0052cc;font-weight:800;font-size:12px;letter-spacing:1px;margin:8px 0 22px}
+.fleet{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(min-width:900px){.fleet{grid-template-columns:1fr 1fr 1fr 1fr}}
+.card{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 6px 18px rgba(0,0,0,.12);position:relative}
+.card img{width:100%;height:170px;object-fit:cover;background:#ddd}
+.badge{position:absolute;top:8px;left:8px;background:#ffcc00;color:#0a1931;font-size:10px;font-weight:900;padding:4px 9px;border-radius:20px}
+.card-body{padding:11px}.card-body h3{font-size:13px}.card-body p{font-size:11px;color:#666;margin-top:3px}
+.feature{display:grid;grid-template-columns:1fr;gap:14px}
+@media(min-width:800px){.feature{grid-template-columns:1fr 1fr 1fr}}
+.box{background:#fff;border-radius:14px;padding:18px;box-shadow:0 6px 18px rgba(0,0,0,.1)}
+.box h3{font-size:16px;margin-bottom:10px}.inp{width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;margin:6px 0;font-size:13px}
+.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:200;align-items:center;justify-content:center;padding:20px}
+.modal-content{background:#fff;width:100%;max-width:380px;border-radius:14px;padding:20px}
+.footer{background:#0a1931;color:#fff;text-align:center;padding:28px 14px;margin-top:30px;font-size:12px}
+.track-result{background:#e6f0ff;padding:12px;border-radius:8px;margin-top:10px;display:none;font-size:13px}
+</style>
+</head>
+<body>
+
+<div class="header">
+<div class="logo">REVEALED LOGISTICS</div>
+<div class="nav">
+<button class="btn btn-outline" onclick="openModal('loginModal')">Login</button>
+<a href="#quote" class="btn btn-yellow">Quote</a>
+</div>
+</div>
+
+<div class="hero">
+<h1>WE OPERATE<br><span>8 TRUCK TYPES</span><br>NOT ONE.</h1>
+<p>Blue Scania Fleet • Fuel • Fridge • Tippers • Side Tippers • Tautliners • Flat Deck • Abnormal • Vans<br>Johannesburg-Based | SADC Cross-Border</p>
+<div style="margin-top:18px">
+<a href="#quote" class="btn btn-yellow">GET INSTANT QUOTE</a>
+<a href="#track" class="btn btn-blue" style="margin-left:8px">TRACK ORDER</a>
+</div>
+</div>
+
+<div class="section">
+<h2 class="h2">OUR FLEET</h2>
+<div class="sub">8 SPECIALIZED DIVISIONS — REARRANGED & FIXED</div>
+<div id="fleet" class="fleet">Loading your 8 blue fleet...</div>
+</div>
+
+<div class="section" id="quote">
+<div class="feature">
+<div class="box">
+<h3>📦 Get Instant Quote</h3>
+<input id="from" class="inp" placeholder="From (e.g. JHB)">
+<input id="to" class="inp" placeholder="To (e.g. Rustenburg)">
+<select id="truck" class="inp">
+<option>Side Tipper - Blue Scania</option><option>Fuel Tanker</option><option>Refrigerated</option><option>End Tipper</option><option>Tautliner</option><option>Flat Deck / Lowbed</option><option>Abnormal Load</option><option>Delivery Vans</option>
+</select>
+<input id="tons" class="inp" type="number" placeholder="Tonnage (e.g. 34)">
+<button class="btn btn-blue" style="width:100%;margin-top:8px" onclick="calcQuote()">Calculate Quote</button>
+<div id="quoteRes" style="margin-top:10px;font-weight:800;color:#0052cc"></div>
+<a id="waQuote" href="#" target="_blank" class="btn btn-yellow" style="width:100%;margin-top:10px;display:none">Send Quote on WhatsApp</a>
+</div>
+
+<div class="box" id="track">
+<h3>🔍 Track Order</h3>
+<input id="trackNo" class="inp" placeholder="Enter Tracking No. e.g. RL-2026-001">
+<button class="btn btn-blue" style="width:100%" onclick="trackOrder()">Track Now</button>
+<div id="trackRes" class="track-result"></div>
+<p style="font-size:11px;color:#666;margin-top:8px">Demo tracking: RL-2026-001 to RL-2026-009 works. Real tracking connects to your dispatch later.</p>
+</div>
+
+<div class="box">
+<h3>💳 Payments</h3>
+<p style="font-size:13px;line-height:1.5">Secure payments for corporate clients.</p>
+<div style="margin:12px 0">
+<p style="font-size:12px"><b>EFT:</b> Revealed Logistics (Pty) Ltd<br>FNB • Acc: 62XXXXXXX • Branch: 250655<br>Ref: Invoice Number</p>
+</div>
+<input id="payRef" class="inp" placeholder="Invoice / Order Ref">
+<select class="inp"><option>Paystack - Card / EFT Instant</option><option>Ozow - Instant
