@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Revealed Logistics</title>
+<script src="https://sdk.minepi.com/pi-sdk.js"></script>
+<script>Pi.init({version:"2.0",sandbox:false})</script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui}
+body{background:#f6f8fb}
+.banner{background:#6d28d9;color:#fff;text-align:center;padding:10px;font-weight:900;letter-spacing:0.5px}
+.top{background:#fff;display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid #eee}
+.logo{font-weight:900;color:#0a5bd7;line-height:1.1;font-size:18px}
+.tabs{display:flex;gap:6px;align-items:center}
+.tab{padding:6px 14px;border-radius:999px;font-size:12px;font-weight:900;border:1px solid #ddd;background:#f1f1f1}
+.tab.active{background:#0b2a5b;color:#fff}
+.login{background:#1d4ed8;color:#fff;border:none;padding:7px 14px;border-radius:999px;font-weight:900}
+.card{background:#fff;margin:12px;border-radius:20px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,0.05)}
+.card h2{font-size:22px;font-weight:900;display:flex;gap:6px}
+.field{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
+.input{border:1.5px solid #dbe2f0;border-radius:12px;padding:12px;background:#fafbff;font-size:14px}
+.label{color:#0a5bd7;font-weight:900;font-size:12px;margin-bottom:4px}
+.tap{color:#0a5bd7;font-weight:800;margin-top:10px;font-size:13px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 12px}
+.truck{background:#fff;border-radius:16px;overflow:hidden;border:1px solid #e5e7eb;position:relative}
+.truck img{width:100%;height:150px;object-fit:cover}
+.badge{position:absolute;top:8px;left:8px;background:#fde047;color:#000;font-size:10px;font-weight:900;padding:4px 8px;border-radius:999px}
+.info{padding:10px}.info b{font-size:13px;display:block}.info span{font-size:11px;color:#6b7280}
+</style>
+</head>
+<body>
+<div class="banner">MODE: MAINNET Pi - Fixed</div>
+<div class="top">
+<div class="logo">REVEALED<br>LOGISTICS</div>
+<div class="tabs">
+<span class="tab active">MAINNET</span>
+<span class="tab">TESTNET</span>
+<button class="login">π Login</button>
+</div>
+</div>
+
+<div class="card">
+<h2>📍 Pickup & Dropoff</h2>
+<div class="field">
+<div><div class="label">FROM (Pickup)</div><input class="input" value="Rustenburg Mine"></div>
+<div><div class="label">TO (Dropoff)</div><input class="input" value="Richards Bay Port"></div>
+<div><div class="label">TONS</div><input class="input" value="20"></div>
+<div><div class="label">KM</div><input class="input" value="450"></div>
+</div>
+<div class="tap">👇 Tap truck to select</div>
+</div>
+
+<div class="grid">
+<div class="truck"><span class="badge">TYPE 01</span><img src="https://i.ibb.co/placeholder-fuel.jpg" onerror="this.src='https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=400'"><div class="info"><b>Fuel Tanker 50,000L</b><span>WA0687 - Diesel Tanker</span></div></div>
+<div class="truck"><span class="badge">TYPE 02</span><img src="https://i.ibb.co/placeholder-cold.jpg" onerror="this.src='https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=400'"><div class="info"><b>Refrigerated Truck</b><span>WA1910 - Cold Chain</span></div></div>
+<div class="truck"><span class="badge">TYPE 03</span><img src="https://i.ibb.co/placeholder-heavy.jpg" onerror="this.src='https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400'"><div class="info"><b>Heavy Hauler Lowbed</b><span>WA3320 - Excavator</span></div></div>
+<div class="truck"><span class="badge">TYPE 04</span><img src="https://i.ibb.co/placeholder-tipper.jpg" onerror="this.src='https://images.unsplash.com/photo-1605600659873-d808a13e4d2a?w=400'"><div class="info"><b>Tipper 30T Bulk</b><span>WA4412 - Tipper</span></div></div>
+</div>
+</body>
+</html>
