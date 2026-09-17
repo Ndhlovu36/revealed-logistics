@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Revealed Logistics</title>
+<script src="https://sdk.minepi.com/pi-sdk.js"></script>
+<script>Pi.init({version:"2.0", sandbox:false})</script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial, sans-serif}
+body{background:#f5f5f5}
+.banner{background:#7c3aed;color:#fff;text-align:center;padding:8px;font-weight:900;font-size:13px}
+.header{background:#fff;display:flex;justify-content:space-between;padding:12px 16px;align-items:center}
+.logo{font-weight:900;color:#0b2a5b;line-height:1}
+.badge{background:#0b2a5b;color:#fff;font-size:10px;padding:4px 10px;border-radius:20px;font-weight:900}
+.btn-login{background:#2563eb;color:#fff;border:none;padding:6px 14px;border-radius:20px;font-weight:900}
+.card{background:#fff;margin:12px;border-radius:16px;padding:16px;border:1px solid #e5e7eb}
+.card h2{font-size:20px;font-weight:900}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.input-box{border:1px solid #d1d5db;border-radius:10px;padding:10px;width:100%;font-weight:700;margin-top:4px}
+.label{font-size:10px;font-weight:900;color:#1d4ed8}
+.trucks{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 12px}
+.truck{background:#fff;border:2px solid #e5e7eb;border-radius:16px;overflow:hidden;cursor:pointer}
+.truck.selected{border-color:#2563eb;box-shadow:0 0 0 2px #bfdbfe}
+.truck-img{height:90px;display:flex;align-items:center;justify-content:center;font-size:36px;position:relative}
+.type{position:absolute;top:6px;left:6px;background:#facc15;color:#000;font-size:9px;font-weight:900;padding:2px 6px;border-radius:20px}
+.truck-info{padding:8px}
+.truck-info b{font-size:12px;display:block;line-height:1.2}
+.truck-info span{font-size:10px;color:#6b7280}
+.bottom{background:#0b1f3a;border-radius:24px;margin:16px;padding:20px;color:#fff}
+.bottom h3{font-size:24px;font-weight:900;line-height:1.1;margin-top:8px}
+.btn-orange{width:100%;background:#ff9f1c;color:#000;font-weight:900;border:none;padding:14px;border-radius:999px;margin-top:16px}
+</style>
+</head>
+<body>
+<div class="banner">MODE: MAINNET Pi - Fixed</div>
+<div class="header">
+  <div class="logo">REVEALED<br>LOGISTICS</div>
+  <div>
+    <span class="badge">MAINNET</span>
+    <button class="btn-login" onclick="login()">π Login</button>
+  </div>
+</div>
+
+<div class="card">
+  <h2>📍 Pickup & Dropoff</h2>
+  <div class="grid2">
+    <div><div class="label">FROM (Pickup)</div><input id="from" class="input-box" value="Rustenburg Mine"></div>
+    <div><div class="label">TO (Dropoff)</div><input id="to" class="input-box" value="Richards Bay Port"></div>
+    <div><div class="label">TONS</div><input id="tons" class="input-box" value="20"></div>
+    <div><div class="label">KM</div><input id="km" class="input-box" placeholder="450"></div>
+  </div>
+  <div style="color:#2563eb;font-weight:900;font-size:13px;margin-top:10px">👇 Tap truck to select</div>
+</div>
+
+<div class="trucks">
+  <div class="truck" onclick="selectTruck(this,'TYPE 01')"><div class="truck-img" style="background:#fb923c"><span class="type">TYPE 01</span>🚛</div><div class="truck-info"><b>Fuel Tanker 50,000L</b><span>WA0687 - Diesel</span></div></div>
+  <div class="truck" onclick="selectTruck(this,'TYPE 02')"><div class="truck-img" style="background:#60a5fa"><span class="type">TYPE 02</span>🚚</div><div class="truck-info"><b>Refrigerated Truck</b><span>WA1910 - Cold Chain</span></div></div>
+  <div class="truck" onclick="selectTruck(this,'TYPE 03')"><div class="truck-img" style="background:#fbbf24"><span class="type">TYPE 03</span>🚜</div><div class="truck-info"><b>Heavy Hauler Lowbed</b><span>WA3320 - Excavator</span></div></div>
+  <div class="truck" onclick="selectTruck(this,'TYPE 04')"><div class="truck-img" style="background:#f87171"><span class="type">TYPE 04</span>🚛</div><div class="truck-info"><b>Tipper 30T Bulk</b><span>WA4412 - Tipper</span></div></div>
+</div>
+
+<div class="bottom">
+  <div style="font-size:9px;letter-spacing:2px;opacity:0.6">REVEALED LOGISTICS (Pty) Ltd</div>
+  <h3>Haul your freight anywhere in South Africa</h3>
+  <button class="btn-orange" onclick="requestQuote()">Request a quote →</button>
+</div>
+
+<script>
+let selectedType = null;
+let piUser = null;
+function selectTruck(el, type){
+  document.querySelectorAll('.truck').forEach(t=>t.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedType = type;
+}
+async function login(){
+  try{
+    const auth = await Pi.authenticate(['username','payments'], function(p){});
+    piUser = auth.user;
+    alert('Logged in: '+piUser.username);
+  }catch(e){ alert('Open in Pi Browser'); }
+}
+async function requestQuote(){
+  if(!selectedType){ alert('Tap truck to select'); return; }
+  if(!piUser){ await login(); if(!piUser) return; }
+  alert('Quote: '+document.getElementById('from').value+' to '+document.getElementById('to').value+' | '+selectedType);
+}
+</script>
+</body>
+</html>
