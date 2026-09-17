@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Revealed Logistics - Fixed White Screen</title>
+<script src="https://sdk.minepi.com/pi-sdk.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Arial;background:#eef4ff;color:#0a1931}
+.header{background:#fff;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+.logo{font-weight:900;color:#0052cc;line-height:1.1}
+.switch{display:flex;gap:4px;background:#eee;padding:3px;border-radius:20px}
+.switch button{padding:6px 12px;border-radius:15px;border:none;font-size:10px;font-weight:900;cursor:pointer}
+.switch button.active{background:#0052cc;color:#fff}.switch button.test-active{background:#ff4444;color:#fff}
+.mode-banner{text-align:center;padding:8px;font-size:11px;font-weight:900;color:#fff}
+.mode-main{background:#6a1bbf}.mode-test{background:#ff4444}
+.btn{padding:10px;border-radius:20px;border:none;font-weight:900;background:#0052cc;color:#fff;width:100%;cursor:pointer}
+.section{max-width:1200px;margin:auto;padding:12px}
+.fleet{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(min-width:800px){.fleet{grid-template-columns:repeat(4,1fr)}}
+.card{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.08);border:2px solid transparent;cursor:pointer}
+.card.selected{border-color:#0052cc}
+.card img{width:100%;height:150px;object-fit:cover;background:#ccc}
+.badge{position:absolute;top:6px;left:6px;background:#ffcc00;color:#000;padding:3px 7px;border-radius:10px;font-size:8px;font-weight:900}
+.card-wrap{position:relative}
+.card-body{padding:8px}.card-body h3{font-size:11px}.card-body p{font-size:9px;color:#666}
+.box{background:#fff;border-radius:14px;padding:12px;margin-bottom:10px;box-shadow:0 3px 10px rgba(0,0,0,.05)}
+.inp{width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;margin:5px 0;font-size:13px}
+label{font-size:10px;font-weight:900;color:#0052cc}
+.pi-status{font-size:11px;margin-top:6px;padding:8px;background:#f0f0f0;border-radius:8px;word-break:break-all}
+#errorBox{background:#ff4444;color:#fff;padding:8px;font-size:11px;display:none;text-align:center}
+</style>
+</head>
+<body>
+
+<div id="errorBox"></div>
+<div id="modeBanner" class="mode-banner mode-main">MODE: MAINNET Pi - White Screen Fixed</div>
+
+<div class="header">
+<div class="logo">REVEALED<br>LOGISTICS</div>
+<div style="display:flex;gap:6px;align-items:center">
+<div class="switch"><button id="btnMain" class="active" onclick="setMode(false)">MAINNET</button><button id="btnTest" onclick="setMode(true)">TESTNET</button></div>
+<button class="btn" id="loginBtn" style="width:auto;padding:8px 12px" onclick="piLogin()">π Login</button>
+</div>
+</div>
+
+<div class="section">
+<div class="box">
+<h3>📍 Pickup & Dropoff</h3>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+<div><label>FROM (Pickup)</label><input id="pickup" class="inp" placeholder="Rustenburg Mine"></div>
+<div><label>TO (Dropoff)</label><input id="dropoff" class="inp" placeholder="Richards Bay Port"></div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+<div><label>TONS</label><input id="tons" class="inp" type="number" value="20" oninput="calcPi()"></div>
+<div><label>KM</label><input id="km" class="inp" type="number" placeholder="450" oninput="calcPi()"></div>
+</div>
+<div id="selectedTruck" style="font-size:11px;color:#0052cc;font-weight:900;margin-top:6px">👇 Tap truck to select</div>
+</div>
+
+<div id="fleet" class="fleet"></div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">
+<div class="box"><div id="qRes" style="color:#0052cc;font-weight:900">20T = 4.00 π</div><div id="routeRes" style="font-size:10px;color:#666"></div></div>
+<div class="box" id="payBox" style="border:2px solid #6a1bbf">
+<h3 id="payTitle">π Pay</h3>
+<input id="piAmt" class="inp" value="4.00">
+<input id="ref" class="inp" placeholder="Ref">
+<button class="btn" id="payBtn" onclick="payPi()">π Pay Now</button>
+<div id="piStatus" class="pi-status">Select truck, enter FROM/TO, Login in Pi Browser</div>
+</div>
+</div>
+</div>
+
+<script>
+// Show any JS error on screen so no more white blank
+window.onerror=function(msg,src,line){
+ document.getElementById('errorBox').style.display='block';
+ document.getElementById('errorBox').innerText='JS Error: '+msg+' at line '+line+' - Fixing...';
+};
+
+let isTestnet=false, piUser=null, selectedTruck=null;
+
+const fleetData=[
+ {id:1, file:'IMG-20260916-WA0687.jpg', name:'Fuel Tanker 50,000L', desc:'WA0687 - Diesel Tanker'},
+ {id:2, file:'IMG-20260916-WA1910.jpg', name:'Refrigerated Truck', desc:'WA1910 - Cold Chain'},
+ {id:3, file:'IMG-20260916-WA2791.jpg', name:'Lowbed - Heavy Haul', desc:'WA2791 - Lowbed'},
+ {id:4, file:'IMG-20260916-WA5229.jpg', name:'Side Tipper - Scania Blue', desc:'WA5229 - Side Tipper'},
+ {id:5, file:'IMG-20260916-WA6953.jpg', name:'Flat Deck - Lowbed', desc:'WA6953 - Flat Deck'},
+ {id:6, file:'IMG-20260916-WA7873.jpg', name:'Side Curtain Truck', desc:'WA7873 - Side Curtain'},
+ {id:7, file:'IMG-20260916-WA8594.jpg', name:'Tautliner - Curtain Side', desc:'WA8594 - Tautliner'},
+ {id:8, file:'IMG-20260916-WA9084.jpg', name:'Panel Van - Last Mile', desc:'WA9084 - Panel Van'}
+];
+
+function initPi(){ try{ if(window.Pi){ Pi.init({version:"2.0", sandbox:isTestnet}); } }catch(e){} }
+
+function setMode(test){
+ isTestnet=test; initPi();
+ const b=document.getElementById('modeBanner');
+ b.className='mode-banner '+(test?'mode-test':'mode-main');
+ b.innerText=test?'MODE: TESTNET':'MODE: MAINNET Pi - Fixed';
+ document.getElementById('btnMain').className=test?'':'active';
+ document.getElementById('btnTest').className=test?'test-active':'';
+ document.getElementById('payTitle').innerText=test?'🧪 Pay Test Pi':'π Pay Real Pi';
+ document.getElementById('payBtn').innerText=test?'🧪 Pay Test Pi':'π Pay Mainnet Pi';
+ calcPi();
+}
+
+function selectTruck(id){
+ selectedTruck=fleetData.find(function(f){return f.id===id});
+ document.querySelectorAll('.card').forEach(function(c){c.classList.remove('selected')});
+ document.getElementById('card-'+id).classList.add('selected');
+ document.getElementById('selectedTruck').innerText='Selected: '+selectedTruck.name;
+ calcPi();
+}
+
+function loadFleet(){
+ try{
+  const cont=document.getElementById('fleet');
+  let html='';
+  for(let i=0;i<fleetData.length;i++){
+   const t=fleetData[i];
+   html+='<div class="card" id="card-'+t.id+'" onclick="selectTruck('+t.id+')"><div class="card-wrap"><span class="badge">TYPE 0'+t.id+'</span><img src="'+t.file+'" onerror="this.src=\'logo-blue.png\'"></div><div class="card-body"><h3>'+t.name+'</h3><p>'+t.desc+'</p></div></div>';
+  }
+  cont.innerHTML=html;
+ }catch(e){
+  document.getElementById('errorBox').style.display='block';
+  document.getElementById('errorBox').innerText='Fleet load error: '+e.message;
+ }
+}
+
+function calcPi(){
+ try{
+  const t=parseFloat(document.getElementById('tons').value)||20;
+  const km=parseFloat(document.getElementById('km').value)||0;
+  let base=t*0.2; if(km>0) base+=km*0.01;
+  const piVal=base.toFixed(2);
+  document.getElementById('qRes').innerText=t+'T '+(km?'• '+km+'km':'')+' = '+piVal+' π';
+  document.getElementById('piAmt').value=piVal;
+  document.getElementById('ref').value='RL-'+(isTestnet?'TEST':'MAIN')+'-'+Date.now().toString().slice(-4);
+  const pu=document.getElementById('pickup').value;
+  const dr=document.getElementById('dropoff').value;
+  document.getElementById('routeRes').innerText=(pu&&dr)?'Route: '+pu+' → '+dr:'Enter FROM / TO';
+ }catch(e){}
+}
+
+async function piLogin(){
+ const st=document.getElementById('piStatus');
+ const btn=document.getElementById('loginBtn');
+ if(typeof Pi==='undefined'){ st.innerText='Open in Pi Browser'; return; }
+ initPi(); btn.innerText='...'; st.innerText='Connecting...';
+ try{
+  const auth=await Pi.authenticate(['username','payments'], function(){});
+  piUser=auth.user;
+  st.innerText='✅ @'+auth.user.username+' Connected';
+  st.style.background='#d4ffd4';
+  btn.innerText='@'+auth.user.username;
+ }catch(e){
+  st.innerText='Login failed: '+e.message+'. Use Pi Browser';
+  st.style.background='#ffd4d4';
+  btn.innerText='π Login';
+ }
+}
+
+async function payPi(){
+ const st=document.getElementById('piStatus');
+ if(!selectedTruck){ st.innerText='Tap a truck first'; return; }
+ if(!document.getElementById('pickup').value||!document.getElementById('dropoff').value){ st.innerText='Enter Pickup and Dropoff'; return; }
+ if(!piUser){ piLogin(); return; }
+ const amt=parseFloat(document.getElementById('piAmt').value);
+ const ref=document.getElementById('ref').value;
+ const pickup=document.getElementById('pickup').value;
+ const dropoff=document.getElementById('dropoff').value;
+ initPi();
+ Pi.createPayment({amount:amt, memo:'Revealed '+selectedTruck.name+' '+pickup+'->'+dropoff+' '+ref, metadata:{truck:selectedTruck.id, pickup, dropoff, ref}},{
+  onReadyForServerApproval: async function(paymentId){
+   st.innerText='Approving '+paymentId+'...';
+   try{ await fetch('/api/approve-payment',{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({paymentId})}); st.innerText='Approved! Confirm in wallet...'; }catch(e){ st.innerText='Approve error '+e; }
+  },
+  onReadyForServerCompletion: async function(paymentId, txid){
+   st.innerText='Completing TX:'+txid;
+   try{ await fetch('/api/complete-payment',{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({paymentId, txid})}); st.innerText='✅ PAID! TX:'+txid; alert('Success!'); }catch(e){ st.innerText='Paid TX:'+txid; }
+  },
+  onCancel: function(){ st.innerText='Cancelled'; },
+  onError: function(e){ st.innerText='Error:'+e; }
+ });
+}
+
+initPi();
+setMode(false);
+loadFleet();
+calcPi();
+</script>
+</body>
+</html>
