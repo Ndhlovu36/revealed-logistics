@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Revealed Logistics - Blue White Gold</title>
+<script src="https://sdk.minepi.com/pi-sdk.js"></script>
+<script>Pi.init({version:"2.0", sandbox:false})</script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui}
+body{background:#ffffff}
+.banner{background:linear-gradient(90deg,#0b2a5b,#1d4ed8);color:#ffd700;text-align:center;padding:10px;font-weight:900;font-size:14px;letter-spacing:1px;border-bottom:2px solid #ffd700}
+.header{background:#ffffff;display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:3px solid #0b2a5b}
+.logo{font-weight:900;color:#0b2a5b;font-size:19px;line-height:1.1}
+.logo span{color:#c9a200}
+.tabs{display:flex;gap:6px;align-items:center}
+.tab{padding:7px 14px;border-radius:20px;font-size:11px;font-weight:900;border:2px solid #0b2a5b;background:#ffffff;color:#0b2a5b}
+.tab.active{background:#0b2a5b;color:#ffd700;border-color:#0b2a5b}
+.login{background:linear-gradient(90deg,#0b2a5b,#1d4ed8);color:#ffd700;border:2px solid #ffd700;padding:7px 16px;border-radius:20px;font-weight:900}
+.card{background:#ffffff;margin:12px;border-radius:18px;padding:16px;border:2px solid #0b2a5b;box-shadow:0 4px 12px rgba(11,42,91,0.12)}
+.card h2{font-size:21px;font-weight:900;color:#0b2a5b}
+.label{font-size:11px;font-weight:900;color:#0b2a5b;margin-top:10px}
+.input{width:100%;border:2px solid #0b2a5b;border-radius:12px;padding:12px;margin-top:4px;font-weight:700;background:#ffffff;color:#0b2a5b}
+.input::placeholder{color:#6b8ab5}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tap{color:#0b2a5b;font-weight:900;font-size:13px;margin-top:12px;background:#ffd700;display:inline-block;padding:4px 12px;border-radius:20px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 12px 20px}
+.truck{background:#ffffff;border-radius:16px;overflow:hidden;border:2px solid #0b2a5b;cursor:pointer;transition:0.2s}
+.truck.selected{border-color:#c9a200;box-shadow:0 0 0 3px #ffd700;transform:scale(1.02)}
+.wrap{position:relative}
+.wrap img{width:100%;height:145px;object-fit:cover}
+.badge{position:absolute;top:8px;left:8px;background:#ffd700;color:#0b2a5b;font-size:10px;font-weight:900;padding:5px 10px;border-radius:999px;border:1px solid #0b2a5b}
+.info{padding:10px;background:#ffffff;border-top:2px solid #0b2a5b}
+.info b{font-size:12.5px;display:block;color:#0b2a5b;line-height:1.2}
+.info span{font-size:10.5px;color:#5a6d8a;font-weight:600}
+.bottom{background:linear-gradient(135deg,#0b2a5b,#1d4ed8);color:#fff;padding:16px;margin:12px;border-radius:16px;border:2px solid #ffd700}
+</style>
+</head>
+<body>
+<div class="banner">MODE: MAINNET Pi - Fixed • BLUE • WHITE • GOLD</div>
+
+<div class="header">
+  <div class="logo">REVEALED<br><span>LOGISTICS</span></div>
+  <div class="tabs">
+    <span class="tab active">MAINNET</span>
+    <span class="tab">TESTNET</span>
+    <button class="login" onclick="Pi.authenticate(['username','payments'],()=>{})">π Login</button>
+  </div>
+</div>
+
+<div class="card">
+  <h2>📍 Pickup & Dropoff</h2>
+  <div class="grid2">
+    <div><div class="label">FROM (Pickup)</div><input class="input" value="Rustenburg Mine"></div>
+    <div><div class="label">TO (Dropoff)</div><input class="input" value="Richards Bay Port"></div>
+    <div><div class="label">TONS</div><input class="input" value="20"></div>
+    <div><div class="label">KM</div><input class="input" value="450"></div>
+  </div>
+  <div class="tap">👇 Tap truck to select</div>
+</div>
+
+<div class="grid">
+  <div class="truck" onclick="selectTruck(this)"><div class="wrap"><span class="badge">TYPE 01</span><img src="https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=500"></div><div class="info"><b>Fuel Tanker 50,000L</b><span>WA0687 - Diesel Tanker</span></div></div>
+  <div class="truck" onclick="selectTruck(this)"><div class="wrap"><span class="badge">TYPE 02</span><img src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=500"></div><div class="info"><b>Refrigerated Truck</b><span>WA1910 - Cold Chain</span></div></div>
+  <div class="truck" onclick="selectTruck(this)"><div class="wrap"><span class="badge">TYPE 03</span><img src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=500"></div><div class="info"><b>Heavy Hauler Lowbed</b><span>WA3320 - Excavator</span></div></div>
+  <div class="truck" onclick="selectTruck(this)"><div class="wrap"><span class="badge">TYPE 04</span><img src="https://images.unsplash.com/photo-1605600659873-d808a13e4d2a?w=500"></div><div class="info"><b>Tipper 30T Bulk</b><span>WA4412 - Tipper</span></div></div>
+  <div class="truck" onclick="selectTruck(this)"><div class="wrap"><span class="badge">TYPE 05</span><img src="https://images.unsplash.com/photo-1605270012917-bf157c5a9541?w=500"></div><div class="info"><b>Flatbed 12M Steel</b><span>WA5510 - Steel Haul</span></div></div>
+  <div class="truck" onclick="selectTruck(this)"><div class="wrap"><span class="badge">TYPE 06</span><img src="https://images.unsplash.com/photo-1519003722824-194243704534?w=500"></div><div class="info"><b>Side Tipper Fleet</b><span>WA6620 - Mining Dump</span></div></div>
+  <div class="truck" onclick="selectTruck(this)"><div class="wrap"><span class="badge">TYPE 07</span><img src="https://images.unsplash.com/photo-1591768793355-74d04bb6608f?w=500"></div><div class="info"><b>Container Carrier 40FT</b><span>WA7730 - Port Haul</span></div></div>
+  <div class="truck" onclick="selectTruck(this)"><div class="wrap"><span class="badge">TYPE 08</span><img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500"></div><div class="info"><b>Lowbed Excavator Hauler</b><span>WA8840 - Plant Move</span></div></div>
+</div>
+
+<div class="bottom">
+  <div style="font-size:10px;letter-spacing:2px;color:#ffd700;font-weight:900">REVEALED LOGISTICS (Pty) Ltd</div>
+  <div style="font-size:20px;font-weight:900;margin-top:6px;color:#ffffff">Blue White Gold Fleet</div>
+</div>
+
+<script>
+function selectTruck(el){
+  document.querySelectorAll('.truck').forEach(t=>t.classList.remove('selected'));
+  el.classList.add('selected');
+}
+</script>
+</body>
+</html>
