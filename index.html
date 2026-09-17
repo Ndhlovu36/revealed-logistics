@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Revealed Logistics | Fixed Names & Login</title>
+<script src="https://sdk.minepi.com/pi-sdk.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial;background:#eef4ff;color:#0a1931}
+.header{background:#fff;padding:8px 10px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+.logo-img{height:40px}
+.switch{display:flex;gap:4px;background:#eee;padding:3px;border-radius:20px}
+.switch button{padding:5px 10px;border-radius:15px;border:none;font-size:10px;font-weight:900;cursor:pointer}
+.switch button.active{background:#0052cc;color:#fff}.switch button.test-active{background:#ff4444;color:#fff}
+.mode-banner{text-align:center;padding:7px;font-size:11px;font-weight:900;color:#fff}
+.mode-main{background:#6a1bbf}.mode-test{background:#ff4444}
+.hero{position:relative;height:340px;display:flex;align-items:center;justify-content:center;text-align:center;color:#fff;background:#0a1931;overflow:hidden}
+.hero img.bg{position:absolute;width:100%;height:100%;object-fit:cover;opacity:.45}
+.hero-content{position:relative;z-index:2}
+.btn{padding:8px 14px;border-radius:20px;border:none;font-weight:900;cursor:pointer;font-size:11px}
+.btn-blue{background:#0052cc;color:#fff}
+.section{max-width:1200px;margin:auto;padding:14px 10px}
+.fleet{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(min-width:900px){.fleet{grid-template-columns:1fr 1fr 1fr 1fr}}
+.card{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.1);position:relative;border:1px solid #e0e0e0}
+.card img{width:100%;height:155px;object-fit:cover;background:#ddd}
+.badge{position:absolute;top:6px;left:6px;background:#ffcc00;color:#0a1931;padding:3px 7px;border-radius:12px;font-size:8px;font-weight:900}
+.card-body{padding:8px}.card-body h3{font-size:11px;line-height:1.2;color:#0a1931}.card-body p{font-size:9px;color:#666;margin-top:2px}
+.box{background:#fff;border-radius:12px;padding:12px;box-shadow:0 4px 10px rgba(0,0,0,.08)}
+.inp{width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;margin:5px 0;font-size:13px}
+.pi-status{font-size:11px;margin-top:6px;padding:6px;border-radius:6px;background:#f0f0f0;word-break:break-all}
+</style>
+</head>
+<body>
+
+<div id="modeBanner" class="mode-banner mode-main">MODE: MAINNET Pi LIVE - Real Pi</div>
+
+<div class="header">
+<img src="logo-blue.png" class="logo-img" alt="Logo" onerror="this.alt='REVEALED LOGISTICS'">
+<div style="display:flex;gap:6px;align-items:center">
+<div class="switch">
+<button id="btnMain" class="active" onclick="setMode(false)">MAINNET</button>
+<button id="btnTest" onclick="setMode(true)">TESTNET</button>
+</div>
+<button class="btn btn-blue" id="loginBtn" onclick="piLogin()">π Login</button>
+</div>
+</div>
+
+<div class="hero">
+<img class="bg" src="fleet-side-tipper-blue.jpg" onerror="this.style.display='none'">
+<div class="hero-content">
+<h1>REVEALED LOGISTICS<br><span style="color:#ffcc00">8 NAMED TRUCKS</span></h1>
+<p style="font-size:12px;margin-top:6px">Real names - No more Blue Fleet only</p>
+</div>
+</div>
+
+<div class="section">
+<div id="fleet" class="fleet"></div>
+<p style="text-align:center;font-size:9px;color:#888;margin-top:8px">Fleet names fixed by code - not by image order</p>
+</div>
+
+<div class="section" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+<div class="box">
+<h3>📦 Quote in Pi</h3>
+<input id="tons" class="inp" type="number" placeholder="Tons" value="20">
+<button class="btn btn-blue" style="width:100%" onclick="calcPi()">Calculate Pi</button>
+<div id="qRes" style="color:#0052cc;font-weight:900;margin-top:8px;font-size:13px">20T = 4.00 π</div>
+</div>
+<div class="box" id="payBox" style="border:2px solid #6a1bbf">
+<h3 id="payTitle">π Pay with Real Pi</h3>
+<input id="piAmt" class="inp" placeholder="Pi Amount" value="4.00">
+<input id="ref" class="inp" placeholder="Ref" value="">
+<button class="btn btn-blue" id="payBtn" style="width:100%" onclick="payPi()">π Pay Mainnet Pi</button>
+<div id="piStatus" class="pi-status">Tap π Login first. Must open in Pi Browser.</div>
+</div>
+</div>
+
+<script>
+let isTestnet=false;
+let piUser=null;
+
+// FIXED FLEET - NAMES LOCKED TO ID, NOT IMAGE ORDER
+const fleetData=[
+ {id:1, name:'Side Tipper - Scania (Chrome)', desc:'34T Side Tipper - Chrome/Copper Haul', file:'side'},
+ {id:2, name:'Fuel Tanker 50,000L', desc:'Diesel Tanker - Fuel Haul', file:'tanker'},
+ {id:3, name:'Refrigerated Truck', desc:'Fridge - Cold Chain -25°C', file:'fridge'},
+ {id:4, name:'End Tipper - Aggregate', desc:'End Tipper - Coal Dump', file:'end'},
+ {id:5, name:'Tautliner - Curtain Side', desc:'Tautliner 30T General Cargo', file:'taut'},
+ {id:6, name:'Flat Deck - Lowbed', desc:'Flat Deck - Steel/Timber', file:'flat'},
+ {id:7, name:'Abnormal Load', desc:'Heavy Haul 100T Mining', file:'abnorm'},
+ {id:8, name:'Delivery Vans', desc:'Last Mile Vans - JHB', file:'van'}
+];
+
+function initPi(){
+ try{ Pi.init({version:"2.0", sandbox:isTestnet}); console.log('Pi init', isTestnet?'testnet':'mainnet'); }catch(e){console.error('Pi init failed',e)}
+}
+
+function setMode(test){
+ isTestnet=test;
+ initPi();
+ const banner=document.getElementById('modeBanner');
+ const btnMain=document.getElementById('btnMain');
+ const btnTest=document.getElementById('btnTest');
+ const payTitle=document.getElementById('payTitle');
+ const payBtn=document.getElementById('payBtn');
+ const payBox=document.getElementById('payBox');
+ if(test){
+  banner.className='mode-banner mode-test'; banner.innerText='MODE: TESTNET Pi - Testing Only';
+  btnMain.className=''; btnTest.className='test-active';
+  payTitle.innerText='🧪 Pay with Test Pi'; payBtn.innerText='🧪 Pay Test Pi'; payBtn.style.background='#ff4444'; payBox.style.borderColor='#ff4444';
+ }else{
+  banner.className='mode-banner mode-main'; banner.innerText='MODE: MAINNET Pi LIVE - Real Pi';
+  btnMain.className='active'; btnTest.className='';
+  payTitle.innerText='π Pay with Real Pi'; payBtn.innerText='π Pay Mainnet Pi'; payBtn.style.background='#0052cc'; payBox.style.borderColor='#6a1bbf';
+ }
+ calcPi();
+ document.getElementById('piStatus').innerText=`Switched to ${test?'TESTNET - Use Test Pi wallet':'MAINNET - Use Real Pi wallet'}. Tap π Login.`;
+}
+
+async function loadFleet(){
+ const container=document.getElementById('fleet');
+ try{
+  const res=await fetch('https://api.github.com/repos/Ndhlovu36/revealed-logistics/contents?ref=main');
+  const files=await res.json();
+  let imgFiles=files.filter(f=>f.name.toLowerCase().startsWith('img-')).map(f=>f.name).sort();
+  // IMPORTANT FIX: Do NOT splice randomly. Use first 8 after sort.
+  if(imgFiles.length>=8){ imgFiles=imgFiles.slice(0,8); }
+  console.log('Images found:',imgFiles);
+  
+  container.innerHTML='';
+  fleetData.forEach((truck,i)=>{
+   const imgUrl=imgFiles[i] || 'fleet-side-tipper-blue.jpg';
+   container.innerHTML+=`<div class="card"><span class="badge">TYPE 0${truck.id}</span><img src="${imgUrl}" onerror="this.src='fleet-side-tipper-blue.jpg'"><div class="card-body"><h3>${truck.name}</h3><p>${truck.desc}</p></div></div>`;
+  });
+ }catch(e){
+  console.error(e);
+  container.innerHTML='';
+  fleetData.forEach(truck=>{
+   container.innerHTML+=`<div class="card"><span class="badge">TYPE 0${truck.id}</span><img src="fleet-side-tipper-blue.jpg"><div class="card-body"><h3>${truck.name}</h3><p>${truck.desc}</p></div></div>`;
+  });
+ }
+}
+
+function calcPi(){
+ const t=parseFloat(document.getElementById('tons').value)||20;
+ const piVal=(t*0.2).toFixed(2);
+ document.getElementById('qRes').innerText=`${t}T = ${piVal} π (${isTestnet?'Testnet':'Mainnet'})`;
+ document.getElementById('piAmt').value=piVal;
+ document.getElementById('ref').value=`RL-${isTestnet?'TEST':'MAIN'}-${Date.now().toString().slice(-5)}`;
+}
+
+// FIXED LOGIN - WORKING NOW
+async function piLogin(){
+ const status=document.getElementById('piStatus');
+ const btn=document.getElementById('loginBtn');
+ if(typeof Pi==='undefined'){ status.innerText='Pi SDK not loaded. Open in Pi Browser.'; return; }
+ if(!window.Pi){ status.innerText='Pi not available. Use Pi Browser.'; return; }
+ initPi();
+ btn.innerText='Connecting...';
+ status.innerText=`Connecting to ${isTestnet?'Testnet':'Mainnet'} Pi...`;
+ try{
+  const auth=await Pi.authenticate(['username','payments'], onIncompletePayment);
+  piUser=auth.user;
+  status.innerText=`✅ ${isTestnet?'Testnet':'Mainnet'} Connected: @${auth.user.username} - Ready to Pay`;
+  status.style.background='#d4ffd4';
+  btn.innerText='@'+auth.user.username;
+  console.log('Pi auth success',auth);
+ }catch(err){
+  console.error('Pi auth error',err);
+  status.innerText=`Login failed: ${err.message||err}. Open this site INSIDE Pi Browser app. Wallet must be ${isTestnet?'Testnet':'Mainnet'} mode.`;
+  status.style.background='#ffd4d4';
+  btn.innerText='π Login';
+ }
+}
+function onIncompletePayment(payment){ console.log('Incomplete payment',payment); }
+
+function payPi(){
+ const status=document.getElementById('piStatus');
+ if(!piUser){ status.innerText='Please Login first - Tap π Login'; piLogin(); return; }
+ const amt=parseFloat(document.getElementById('piAmt').value);
+ if(!amt){ alert('Enter Pi amount'); return; }
+ const ref=document.getElementById('ref').value||'RL-'+Date.now();
+ initPi();
+ Pi.createPayment({amount:amt, memo:`Revealed ${isTestnet?'TESTNET':'MAINNET'} ${ref}`, metadata:{ref:ref, mode:isTestnet?'testnet':'mainnet'}},{
+  onReadyForServerApproval:id=>{status.innerText=`Approving ${isTestnet?'Test':'Real'} Pi... ${id}`;},
+  onReadyForServerCompletion:(id,txid)=>{status.innerText=`✅ Paid! TX:${txid}`; alert(`Pi Paid! ${isTestnet?'Test Pi':'Real Pi'} TX: ${txid}`);},
+  onCancel:id=>{status.innerText='Payment Cancelled';},
+  onError:(err)=>{status.innerText='Payment Error: '+err; console.error(err);}
+ });
+}
+
+initPi();
+setMode(false);
+loadFleet();
+calcPi();
+</script>
+</body>
+</html>
