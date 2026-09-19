@@ -4,7 +4,7 @@
 <div class="h"><div style="font-weight:900;color:#0052cc">REVEALED<br>LOGISTICS</div><div style="display:flex;gap:5px"><div class="sw"><button id="bM" class="a" onclick="setM(false)">MAIN</button><button id="bT" onclick="setM(true)">TEST</button></div><button class="btn" id="loginBtn" style="background:#0052cc;width:auto" onclick="login()">π Login</button></div></div>
 <div class="s">
 <div class="box"><input id="pickup" class="inp" placeholder="FROM e.g. Rustenburg"><input id="dropoff" class="inp" placeholder="TO e.g. Richards Bay"><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px"><input id="tons" class="inp" type="number" value="20"><input id="km" class="inp" type="number" value="450"></div><div id="selTxt" style="font-size:11px;color:#0052cc;font-weight:900">👇 Tap truck below</div></div>
-<div id="fleet" <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+<div id="fleet" class="fleet"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
 <div class="box"><h3>📦 Quote</h3><div id="q" style="color:#0052cc;font-weight:900">20T = 4.00 π</div><div id="r" style="font-size:10px;color:#666"></div></div>
 <div class="box" id="payBox" style="border:2px solid #6a1bbf"><h3 id="payT">π Pay</h3><input id="piAmt" class="inp" value="4.00"><input id="oid" class="inp" value="RL-1234"><button class="btn" id="payBtn" style="background:#6a1bbf" onclick="pay()">π Pay Pi</button><div id="status" style="font-size:11px;background:#f0f0f0;padding:6px;border-radius:6px;margin-top:6px;word-break:break-all">Not logged in</div></div>
 </div></div><script>
