@@ -1,1 +1,29 @@
 
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Revealed Logistics</title><script src="https://sdk.minepi.com/pi-sdk.js"></script><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial;background:#eef4ff;color:#0a1931}.h{background:#fff;padding:8px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10}.sw{display:flex;background:#eee;padding:3px;border-radius:20px}.sw button{padding:5px 10px;border:none;border-radius:15px;font-size:10px;font-weight:900}.a{background:#0052cc;color:#fff}.b{font-size:11px;font-weight:900;color:#fff;text-align:center;padding:6px}.main{background:#6a1bbf}.test{background:#ff4444}.s{max-width:1200px;margin:auto;padding:10px}.fleet{display:grid;grid-template-columns:1fr 1fr;gap:8px}.card{background:#fff;border-radius:12px;overflow:hidden;border:2px solid transparent}.card.sel{border-color:#0052cc}.card img{width:100%;height:120px;object-fit:cover}.box{background:#fff;border-radius:12px;padding:10px;margin-bottom:10px}.inp{width:100%;padding:8px;border:1px solid #ddd;border-radius:8px;margin:4px 0}.btn{padding:10px;border:none;border-radius:20px;font-weight:900;width:100%;color:#fff}</style></head><body>
+<div id="banner" class="b main">MAINNET - Tap to select truck</div>
+<div class="h"><div style="font-weight:900;color:#0052cc">REVEALED<br>LOGISTICS</div><div style="display:flex;gap:5px"><div class="sw"><button id="bM" class="a" onclick="setM(false)">MAIN</button><button id="bT" onclick="setM(true)">TEST</button></div><button class="btn" id="loginBtn" style="background:#0052cc;width:auto" onclick="login()">π Login</button></div></div>
+<div class="s">
+<div class="box"><input id="pickup" class="inp" placeholder="FROM e.g. Rustenburg"><input id="dropoff" class="inp" placeholder="TO e.g. Richards Bay"><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px"><input id="tons" class="inp" type="number" value="20"><input id="km" class="inp" type="number" value="450"></div><div id="selTxt" style="font-size:11px;color:#0052cc;font-weight:900">👇 Tap truck below</div></div>
+<div id="fleet" <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+<div class="box"><h3>📦 Quote</h3><div id="q" style="color:#0052cc;font-weight:900">20T = 4.00 π</div><div id="r" style="font-size:10px;color:#666"></div></div>
+<div class="box" id="payBox" style="border:2px solid #6a1bbf"><h3 id="payT">π Pay</h3><input id="piAmt" class="inp" value="4.00"><input id="oid" class="inp" value="RL-1234"><button class="btn" id="payBtn" style="background:#6a1bbf" onclick="pay()">π Pay Pi</button><div id="status" style="font-size:11px;background:#f0f0f0;padding:6px;border-radius:6px;margin-top:6px;word-break:break-all">Not logged in</div></div>
+</div></div><script>
+let isTest=false,sel=null,user=null;
+let trucks=[
+{id:"WA0687",n:"Fuel Tanker 50kL",s:"WA0687 Diesel",img:"./IMG-20260916-WA0687.jpg"},
+{id:"WA1910",n:"Refrigerated",s:"WA1910 Cold",img:"./IMG-20260916-WA1910.jpg"},
+{id:"WA2791",n:"Cargo 30T",s:"WA2791 Cargo",img:"./IMG-20260916-WA2791.jpg"},
+{id:"WA0397",n:"Side Tipper 34T",s:"WA0397 Blue",img:"./IMG-20260918-WA0397.jpg"},
+{id:"WA6953",n:"Flat Deck",s:"WA6953 Steel",img:"./IMG-20260916-WA6953.jpg"},
+{id:"WA7873",n:"Curtain Side",s:"WA7873 Curtain",img:"./IMG-20260916-WA7873.jpg"},
+{id:"WA8594",n:"Tautliner",s:"WA8594",img:"./IMG-20260916-WA8594.jpg"},
+{id:"WA9084",n:"Panel Van",s:"WA9084 Last Mile",img:"./IMG-20260916-WA9084.jpg"}];
+function render(){document.getElementById('fleet').innerHTML=trucks.map(t=>`<div class="card ${sel==t.id?'sel':''}" onclick="selectT('${t.id}')"><img src="${t.img}" onerror="this.src='https://via.placeholder.com/300x200/0052cc/fff?text=${t.id}'"><div style="padding:6px"><b style="font-size:10px">${t.n}</b><br><span style="font-size:8px;color:#666">${t.s}</span></div></div>`).join('')}
+function selectT(id){sel=id;document.getElementById('selTxt').innerText='✅ '+id+' selected';render();calc()}
+function calc(){let tons=document.getElementById('tons').value||20;let pi=(tons*0.2).toFixed(2);document.getElementById('q').innerText=tons+'T = '+pi+' π';document.getElementById('piAmt').value=pi}
+function setM(t){isTest=t;Pi.init({version:"2.0",sandbox:t});document.getElementById('banner').className='b '+(t?'test':'main');document.getElementById('bM').className=t?'':'a';document.getElementById('bT').className=t?'a':'';
+document.getElementById('status').innerText='Switched to '+(t?'TESTNET':'MAINNET')+' - Login again'}
+async function login(){try{document.getElementById('status').innerText='Connecting...';let a=await Pi.authenticate(['username','payments','wallet_address'],p=>{});user=a.user;document.getElementById('loginBtn').innerText='✓ '+a.user.username;document.getElementById('status').innerText='✅ '+a.user.username+' Ready'}catch(e){document.getElementById('status').innerText='Open in Pi Browser! '+e.message}}
+async function pay(){if(!user){alert('Login first');return}if(!sel){alert('Select truck');return}let amt=parseFloat(document.getElementById('piAmt').value);document.getElementById('status').innerText='Creating payment...';try{await Pi.createPayment({amount:amt,memo:'Revealed '+sel,metadata:{truck:sel}},{onReadyForServerApproval:id=>{document.getElementById('status').innerText='Approving '+id},onReadyForServerCompletion:(id,txid)=>{document.getElementById('status').innerText='✅ SUCCESS TXID:'+txid;alert('Paid! '+txid)},onCancel:id=>{document.getElementById('status').innerText='Cancelled'},onError:e=>{document.getElementById('status').innerText='Error '+e.message}})}catch(e){document.getElementById('status').innerText='Pay err '+e.message}}
+Pi.init({version:"2.0",sandbox:false});render();calc();
+</script></body></html>
