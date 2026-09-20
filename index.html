@@ -1,0 +1,59 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
+<title>Revealed Logistics - Fixed - GitHub Pages</title><script src="https://sdk.minepi.com/pi-sdk.js"></script>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial;background:#0a1931;color:#fff}
+.top{background:#0a1931;padding:12px;display:flex;align-items:center;gap:10px;border-bottom:2px solid #d4af37;position:sticky;top:0;z-index:10}
+.logo{width:44px;height:44px;background:gold;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#0a1931;font-weight:900;font-size:22px}
+.hero{height:58vh;position:relative;background:url('./fleet.jpg') center/cover no-repeat;background-color:#1e3a5f}
+.hero-overlay{position:absolute;inset:0;background:linear-gradient(to bottom, rgba(10,25,49,0.9) 0%, rgba(10,25,49,0.2) 45%, rgba(10,25,49,0.92) 100%)}
+.card{background:#fff;color:#1f2937;border-radius:18px;padding:16px;margin:12px}
+.sel,.inp{width:100%;padding:13px;border:1.5px solid #e5e7eb;border-radius:12px;margin:7px 0;font-size:14px;background:#f9fafb}
+.btn{width:100%;padding:16px;background:linear-gradient(90deg,#d4af37,#ffd700);border:none;border-radius:14px;font-weight:900;color:#0a1931;font-size:15px;cursor:pointer}
+.tabs{display:flex;background:#111827;margin:10px;border-radius:12px;padding:5px;gap:5px}
+.tab{flex:1;padding:12px;text-align:center;border-radius:10px;font-weight:900;font-size:12px;cursor:pointer;color:#9ca3af}.tab.active{background:gold;color:#000}.tab.main.active{background:#22c55e;color:#000}
+.status{margin-top:10px;font-size:11px;background:#f3f4f6;padding:10px;border-radius:8px;color:#333;white-space:pre-wrap;word-break:break-all}
+.badge{display:inline-block;background:gold;color:#000;font-weight:900;padding:5px 12px;border-radius:20px;font-size:11px;margin:2px}
+</style></head><body>
+<div class="top"><div class="logo">π</div><div><b style="color:#d4af37">REVEALED LOGISTICS (Pty) Ltd</b><div style="font-size:9px;color:#fff">Haul freight anywhere in SA • GitHub Pages FIXED v3</div></div><button id="loginBtn" onclick="login()" style="margin-left:auto;background:#fff;border:none;padding:9px 16px;border-radius:22px;font-weight:900;font-size:12px">Login Pi</button></div>
+<div class="tabs"><div id="t-test" class="tab active" onclick="setMode('test')">🧪 TESTNET</div><div id="t-main" class="tab main" onclick="setMode('main')">💎 MAINNET</div></div>
+<div style="text-align:center;font-size:10px;color:#ffd700" id="modeTxt">Mode: TESTNET - GitHub Pages Fixed to BOOKED</div>
+<div class="hero"><div class="hero-overlay"></div><div style="position:absolute;top:0;left:0;right:0;padding:14px;text-align:center;z-index:2"><div style="color:#ffd700;font-weight:900;font-size:24px;text-shadow:0 2px 6px #000">Haul your freight anywhere in South Africa</div><div style="color:#e5c07b;font-size:11px;margin-top:6px">Transportation and storage - Reliable nationwide hauling - Secure storage</div></div><div style="position:absolute;bottom:0;left:0;right:0;padding:10px;text-align:center;background:rgba(10,25,49,0.9)"><div style="color:#ffd700;font-size:10px;font-weight:700">Request a quote • View the fleet • Pay with Pi - FIXED v3</div></div></div>
+<div class="card">
+<div><span class="badge">PAY WITH π ONLY</span><span class="badge" style="background:#22c55e;color:#fff">BOOKED FIXED v3</span><span class="badge">GitHub Pages</span></div>
+<h3 style="margin:8px 0">Book Freight - Fixed for GitHub Pages</h3>
+<select id="from" class="sel"><option>JHB Johannesburg - Gauteng Depot</option><option>PTA Pretoria</option><option>DBN Durban</option><option>CPT Cape Town</option></select>
+<select id="to" class="sel"><option>DBN Durban</option><option>JHB Johannesburg</option><option>CPT Cape Town</option><option>PTA Pretoria</option></select>
+<select id="load" class="sel"><option value="1.5">Small Load - 1.5 Pi</option><option value="3" selected>Medium - 3 Pi - POPULAR</option><option value="5">Full Truck - 5 Pi</option><option value="8">Heavy Duty - 8 Pi</option></select>
+<input id="wa" class="inp" placeholder="WhatsApp for invoice e.g. 27821234567">
+<input type="date" id="date" class="sel">
+<button class="btn" id="payBtn" onclick="pay()">Request a quote → Pay with Pi</button>
+<div id="status" class="status">✅ NEW v3 for GitHub Pages
+✅ If you see v3, cache cleared!
+Backend: Using Bus Company Vercel API to approve - So it will NOT expire
+👉 Test in Pi Browser → Should show BOOKED!</div>
+</div>
+<script>
+let user=null,mode='test',isPaying=false;
+// CHANGE THIS TO YOUR BUS COMPANY VERCEL URL - it has the working api/
+const BACKEND_URL = "https://revelation-bus-company.vercel.app"; // <-- YOUR WORKING VERCEL
+
+function setMode(m){mode=m;document.getElementById('t-test').className=m=='test'?'tab active':'tab';document.getElementById('t-main').className=m=='main'?'tab main active':'tab main';if(m=='test')Pi.init({version:"2.0",sandbox:true});else Pi.init({version:"2.0",sandbox:false});document.getElementById('modeTxt').innerText='Mode: '+m.toUpperCase()+' - Backend: '+BACKEND_URL;}
+setMode('test');
+async function login(){let b=document.getElementById('loginBtn');b.innerText='Logging...';try{let a=await Pi.authenticate(['username','payments'],()=>{});user=a.user;b.innerText='✓ '+a.user.username;document.getElementById('status').innerText='✅ Logged in: '+a.user.username+'\nBackend: '+BACKEND_URL+'\nReady - Will BOOK not Expire';}catch(e){b.innerText='Login Pi';document.getElementById('status').innerText='❌ '+e.message;}}
+async function pay(){if(isPaying)return;if(!user){alert('Login Pi first');return;}let amt=parseFloat(document.getElementById('load').value);let from=document.getElementById('from').value;let to=document.getElementById('to').value;let wa=document.getElementById('wa').value;if(!wa||wa.length<9){alert('Enter WhatsApp');return;}isPaying=true;let btn=document.getElementById('payBtn');btn.innerText='Processing...';btn.disabled=true;document.getElementById('status').innerText='⏳ Creating payment '+amt+' Pi...';try{await Pi.createPayment({amount:amt,memo:`Revealed Logistics ${from}->${to} ${amt} Pi`,metadata:{from,to,amount:amt,wa,mode}},{
+onReadyForServerApproval:async(pid)=>{
+document.getElementById('status').innerText='⏳ Approving via '+BACKEND_URL+'\nID: '+pid+'\nThis fixes GitHub Pages expiry!';
+let res=await fetch(BACKEND_URL+'/api/approve',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentId:pid})});
+if(!res.ok){let t=await res.text();throw new Error('Approve failed: '+t+' - Check PI_API_KEY in Bus Vercel');}
+document.getElementById('status').innerText='✅ Approved! Confirm in Wallet - Will NOT expire\nID: '+pid;
+},
+onReadyForServerCompletion:async(pid,txid)=>{
+document.getElementById('status').innerText='⏳ Completing via backend...\nTX: '+txid;
+await fetch(BACKEND_URL+'/api/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentId:pid,txid})});
+document.getElementById('status').innerText='✅ BOOKED! ['+mode.toUpperCase()+']\nTX: '+txid+'\nRoute: '+from+' → '+to+'\nWhatsApp: '+wa+'\n\nFIXED v3 - GitHub Pages now shows BOOKED!';
+btn.innerText='✅ BOOKED! v3';btn.disabled=false;isPaying=false;alert('✅ BOOKED!\nTX: '+txid);
+},
+onCancel:(pid)=>{document.getElementById('status').innerText='❌ Cancelled';btn.innerText='Request a quote';btn.disabled=false;isPaying=false;},
+onError:(e)=>{document.getElementById('status').innerText='❌ Error: '+(e.message||JSON.stringify(e))+'\nBackend: '+BACKEND_URL;btn.innerText='Retry';btn.disabled=false;isPaying=false;}
+});}catch(e){document.getElementById('status').innerText='❌ '+e.message;btn.innerText='Retry';btn.disabled=false;isPaying=false;}}
+</script></body></html>
