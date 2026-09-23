@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>REVEALED LOGISTICS</title>
+<style>
+body{background:#001a4d;color:white;font-family:Arial;text-align:center;padding:10px;margin:0}
+.inp{width:90%;padding:12px;margin:6px;border-radius:8px;border:0}
+.btn-pi, .btn.btn-pi{background:gold;color:black;padding:14px;width:92%;border-radius:10px;font-weight:bold;font-size:16px;margin:8px;border:0}
+.status{background:black;padding:10px;margin:8px;border-radius:8px}
+</style>
+<script src="https://sdk.minepi.com/pi-sdk.js"></script>
+</head>
+<body>
+<div>
+<h2>REVEALED LOGISTICS</h2>
+<p>8 Fleets - SA Wide</p>
+<input id="pickup" class="inp" placeholder="Pickup - e.g. Johannesburg">
+<input id="drop" class="inp" placeholder="Drop - e.g. Durban">
+<select id="truck" class="inp">
+<option>1. WA0397 Side Tipper</option>
+<option>2. Flat Deck</option>
+<option>3. Tautliner</option>
+<option>4. Side Curtain</option>
+<option>5. Panel Van</option>
+<option>6. Abnormal Load</option>
+<option>7. Fuel Tanker</option>
+<option>8. Refrigerated Truck</option>
+</select>
+<input id="wa" class="inp" placeholder="WhatsApp number">
+<input id="email" class="inp" placeholder="Email - receipt to revealed.logistics@gmail.com">
+<button class="btn btn-pi" id="payBtn" onclick="pay()">Book & Pay with Pi</button>
+<div id="status" class="status">✅ Pickup & Drop tabs live</div>
+<div style="text-align:center; padding:12px; background:black; color:yellow; margin-top:10px; border-radius:8px;">📧 revealed.logistics@gmail.com</div>
+</div>
+<script>
+let user=null,mode='test',isPaying=false;
+function setMode(m){mode=m; document.getElementById('status').innerText=mode+' mode - '+document.getElementById('status').innerText}
+setMode('test');
+async function login(){let b=document.getElementById('status'); try{let a=await Pi.authenticate(['username','payments'],p=>{}); user=a.user; b.innerText='Welcome '+user.username+' ✅ Pickup & Drop tabs live';}catch(e){b.innerText='Login failed - Pickup & Drop tabs live'}}
+async function pay(){if(isPaying)return; let btn=document.getElementById('payBtn'); let pickup=document.getElementById('pickup').value; let drop=document.getElementById('drop').value; if(!pickup||!drop){alert('Enter Pickup & Drop');return;} isPaying=true; btn.innerText='Paying...'; Pi.createPayment({amount:1, memo:'Revealed Logistics '+pickup+' to '+drop, metadata:{pickup:pickup, dropoff:drop, email:'revealed.logistics@gmail.com'}},{onReadyForServerApproval:async(pid)=>{ await fetch('/api/approve',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentId:pid})})}, onReadyForServerCompletion:async(pid,txid)=>{ await fetch('/api/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentId:pid,txid:txid})}); document.getElementById('status').innerText='✅ Paid! Receipt sent to revealed.logistics@gmail.com'; isPaying=false; btn.innerText='Book & Pay with Pi'}, onCancel:()=>{btn.innerText='Book & Pay with Pi'; isPaying=false; document.getElementById('status').innerText='Cancelled'}, onError:(e)=>{document.getElementById('status').innerText='Error '+e; isPaying=false; btn.innerText='Book & Pay with Pi'}}); }catch(e){document.getElementById('status').innerText='Error '+e; isPaying=false; btn.innerText='Book & Pay with Pi'}}
+</script></body></html>
