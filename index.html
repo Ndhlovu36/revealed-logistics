@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>REVEALED LOGISTICS</title>
+<style>
+body{background:#001a4d;color:#fff;font-family:Arial;margin:0;padding:10px;text-align:center}
+.inp{width:92%;padding:12px;margin:6px;border-radius:10px;border:0}
+.sel{width:95%;padding:12px;margin:6px;border-radius:10px;border:0;background:white;font-weight:bold}
+.btn{padding:10px 14px;border-radius:8px;border:0;font-weight:bold;margin:4px;cursor:pointer}
+.btn-mode{background:#222;color:#fff}
+.btn-mode.active{background:gold;color:#000}
+.btn-pi{background:gold;color:#000;padding:14px;width:48%;border-radius:12px;font-size:16px;margin:6px 1%;border:0}
+.btn-cancel{background:#ff3b3b;color:#fff;padding:14px;width:48%;border-radius:12px;font-size:16px;margin:6px 1%;border:0}
+.fleet{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px}
+.card{background:#fff;color:#000;border-radius:10px;overflow:hidden;padding-bottom:6px;cursor:pointer;border:3px solid transparent}
+.card img{width:100%;height:90px;object-fit:cover;display:block}
+.card.selected{border-color:gold}
+.status{background:#000;padding:10px;border-radius:8px;margin-top:10px;word-break:break-word}
+.dist-box{background:#fff;color:#000;padding:14px;border-radius:12px;margin:10px;text-align:left;display:none}
+.price-big{font-size:24px;color:#001a4d;background:gold;padding:8px 14px;border-radius:8px;display:inline-block;margin:6px 0}
+.action-bar{display:none;margin:10px}
+.weight-box{background:#002366;padding:10px;border-radius:10px;margin:10px;border:1px solid gold}
+</style>
+<script src="https://sdk.minepi.com/pi-sdk.js"></script>
+</head>
+<body>
+<h2>REVEALED LOGISTICS</h2>
+<button class="btn btn-mode active" id="testBtn" onclick="setMode('test')">Testnet</button>
+<button class="btn btn-mode" id="mainBtn" onclick="setMode('mainnet')">Mainnet</button>
+<button class="btn" id="loginBtn" style="background:white" onclick="login()">Login with Pi</button>
+<p id="modeText">Mode: testnet | Login required</p>
+
+<datalist id="saCities">
+<option value="Johannesburg"><option value="Pretoria"><option value="Durban"><option value="Cape Town"><option value="Gqeberha (Port Elizabeth)"><option value="East London"><option value="Bloemfontein"><option value="Polokwane"><option value="Mbombela (Nelspruit)"><option value="Rustenburg"><option value="Kimberley">
+</datalist>
+
+<input id="pickup" class="inp" list="saCities" placeholder="Pickup city" oninput="updateQuote()">
+<input id="drop" class="inp" list="saCities" placeholder="Drop city" oninput="updateQuote()">
+
+<div class="weight-box">
+<label><b>⚖️ Load Weight (Tons)</b></label><br>
+<select id="tons" class="sel" onchange="updateQuote()">
+<option value="">Select tons</option>
+<option value="1">1 Ton</option><option value="2">2 Tons</option><option value="5">5 Tons</option><option value="10">10 Tons</option><option value="15">15 Tons</option><option value="20">20 Tons</option><option value="30">30 Tons</option><option value="34">34 Tons Full</option>
+</select>
+</div>
+
+<div id="distBox" class="dist-box"></div>
+
+<div class="fleet">
+<div class="card" onclick="selectFleet(this,'Side Tipper',0.0045,8,34)"><img src="IMG-20260918-WA0397.jpg"><b>Side Tipper</b></div>
+<div class="card" onclick="selectFleet(this,'Flat Deck',0.0038,6,34)"><img src="IMG-20260916-WA8594.jpg"><b>Flat Deck</b></div>
+<div class="card" onclick="selectFleet(this,'Side Curtain',0.0035,5,30)"><img src="IMG-20260916-WA7873.jpg"><b>Side Curtain</b></div>
+<div class="card" onclick="selectFleet(this,'Panel Van',0.0018,1.2,1.5)"><img src="IMG-20260916-WA9084.jpg"><b>Panel Van</b></div>
+</div>
+
+<input type="hidden" id="truck"><input type="hidden" id="truckRate"><input type="hidden" id="truckBase"><input type="hidden" id="truckMax">
+<input id="wa" class="inp" placeholder="WhatsApp number">
+
+<div id="actionBar" class="action-bar">
+<button class="btn btn-cancel" onclick="cancelQuote()">❌ Cancel</button>
+<button class="btn btn-pi" id="payBtn">💳 Pay with Pi</button>
+</div>
+
+<div id="status" class="status">⚠️ Open this app INSIDE Pi Browser. Login will not work in Chrome.</div>
+
+<script>
+const coords={"Johannesburg":{lat:-26.2041,lon:28.0473},"Pretoria":{lat:-25.7479,lon:28.2293},"Durban":{lat:-29.8587,lon:31.0218},"Cape Town":{lat:-33.9249,lon:18.4241},"Gqeberha (Port Elizabeth)":{lat:-33.9608,lon:25.6022},"East London":{lat:-33.0153,lon:27.9116},"Bloemfontein":{lat:-29.0852,lon:26.1596},"Polokwane":{lat:-23.9045,lon:29.4689},"Mbombela (Nelspruit)":{lat:-25.4753,lon:30.9694},"Rustenburg":{lat:-25.6678,lon:27.2419},"Kimberley":{lat:-28.7282,lon:24.7499}};
+function haversine(a,b){const R=6371;const dLat=(b.lat-a.lat)*Math.PI/180;const dLon=(b.lon-a.lon)*Math.PI/180;const lat1=a.lat*Math.PI/180;const lat2=b.lat*Math.PI/180;const x=Math.sin(dLat/2)**2+Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLon/2)**2;return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));}
+let mode='test', user=null, selected=null, isPaying=false, lastKm=0;
+try{ Pi.init({version:"2.0", sandbox: true}); console.log("Pi SDK init"); }catch(e){ document.getElementById('status').innerText='Pi SDK failed: '+e; }
+
+function setMode(m){mode=m;document.getElementById('testBtn').classList.toggle('active',m==='test');document.getElementById('mainBtn').classList.toggle('active',m==='mainnet');document.getElementById('modeText').innerText='Mode: '+m;try{ Pi.init({version:"2.0", sandbox: m==='test'});}catch(e){} updateQuote();}
+function selectFleet(el,name,rate,base,max){if(selected)selected.classList.remove('selected');el.classList.add('selected');selected=el;document.getElementById('truck').value=name;document.getElementById('truckRate').value=rate;document.getElementById('truckBase').value=base;document.getElementById('truckMax').value=max;updateQuote();}
+function updateQuote(){let pu=document.getElementById('pickup').value.trim();let dr=document.getElementById('drop').value.trim();let tr=document.getElementById('truck').value;let rate=parseFloat(document.getElementById('truckRate').value)||0;let base=parseFloat(document.getElementById('truckBase').value)||0;let max=parseFloat(document.getElementById('truckMax').value)||34;let tons=parseFloat(document.getElementById('tons').value)||0;let box=document.getElementById('distBox');let bar=document.getElementById('actionBar');if(!coords[pu]||!coords[dr]||pu===dr){box.style.display='none';bar.style.display='none';return;}let km=haversine(coords[pu],coords[dr]);let kmRoad=Math.round(km*1.28);lastKm=kmRoad;if(!tons){box.style.display='block';bar.style.display='none';box.innerHTML=`📏 ${pu}→${dr} = ${kmRoad}km<br>Select Tons`;return;}if(!tr){box.style.display='block';bar.style.display='none';box.innerHTML=`📏 ${pu}→${dr} = ${kmRoad}km | ${tons}T<br>Tap truck`;return;}if(tons>max){box.style.display='block';bar.style.display='none';box.innerHTML=`⚠️ ${tr} max ${max}T`;return;}let price=base+(kmRoad*rate)+(tons*0.12);price=Math.round(price*100)/100;box.style.display='block';bar.style.display='block';box.innerHTML=`📏 <b>${pu}→${dr}</b> ${kmRoad}km<br>⚖️ ${tons}T | ${tr}<br><span class="price-big">💰 π ${price}</span>`;window.currentPrice=price;document.getElementById('status').innerText=`✅ π ${price} Ready - Login to Pay`; }
+function cancelQuote(){document.getElementById('pickup').value='';document.getElementById('drop').value='';document.getElementById('tons').value='';document.getElementById('truck').value='';if(selected)selected.classList.remove('selected');selected=null;document.getElementById('distBox').style.display='none';document.getElementById('actionBar').style.display='none';window.currentPrice=0;}
+
+async function login(){
+  let btn=document.getElementById('loginBtn');
+  btn.innerText='Connecting...';
+  document.getElementById('status').innerText='Trying Pi login... Make sure you are in Pi Browser';
+  try{
+    // FIX: incomplete payment handler
+    const onIncomplete = (payment) => {
+      console.log("Incomplete payment", payment);
+      return fetch('/api/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentId:payment.identifier,txid:payment.transaction.txid})});
+    };
+    const auth = await Pi.authenticate(['username','payments'], onIncomplete);
+    user = auth.user;
+    btn.innerText='Logged: '+user.username;
+    document.getElementById('status').innerText='✅ Welcome '+user.username+' - Now you can Pay π '+(window.currentPrice||'');
+  }catch(e){
+    console.error(e);
+    document.getElementById('status').innerText='❌ Login failed: '+e.message+' | You MUST open in Pi Browser, not Chrome. Also check your Pi Developer Portal URL is whitelisted.';
+    btn.innerText='Login with Pi - Retry';
+  }
+}
+
+async function pay(){
+  if(isPaying) return;
+  let pu=document.getElementById('pickup').value, dr=document.getElementById('drop').value, tr=document.getElementById('truck').value, tons=document.getElementById('tons').value;
+  if(!pu||!dr||!tons||!tr){ alert('Complete quote'); return; }
+  if(!user){ alert('Login first - Tap Login with Pi'); return; }
+  let price=window.currentPrice||1;
+  isPaying=true;
+  let btn=document.getElementById('payBtn'); btn.innerText=`Paying π ${price}...`;
+  document.getElementById('status').innerText='Creating Pi payment...';
+  try{
+    Pi.createPayment({amount:price,memo:`${tons}T ${tr} ${pu}->${dr}`.slice(0,90),metadata:{pickup:pu,dropoff:dr,truck:tr,tons:tons,mode:mode,km:lastKm,price:price}},
+    {onReadyForServerApproval:async pid=>{
+      document.getElementById('status').innerText='Approving on server...';
+      let r=await fetch('/api/approve',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentId:pid})});
+      let j=await r.json(); console.log('approve',j);
+    },
+    onReadyForServerCompletion:async(pid,txid)=>{
+      document.getElementById('status').innerText='Completing...';
+      let r=await fetch('/api/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentId:pid,txid:txid})});
+      let j=await r.json(); console.log('complete',j);
+      document.getElementById('status').innerText=`✅ Paid π ${price}! Booked`;
+      isPaying=false; btn.innerText='💳 Pay with Pi';
+    },
+    onCancel:()=>{document.getElementById('status').innerText='Cancelled - You can Pay again or Cancel quote'; isPaying=false; btn.innerText='💳 Pay with Pi';},
+    onError:e=>{document.getElementById('status').innerText='Pi Payment Error: '+e; isPaying=false; btn.innerText='💳 Pay with Pi';}
+    });
+  }catch(e){document.getElementById('status').innerText='Error: '+e.message; isPaying=false; btn.innerText='💳 Pay with Pi';}
+}
+document.getElementById('payBtn').onclick=pay;
+</script>
+</body>
+</html>
