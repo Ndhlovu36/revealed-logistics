@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>REVEALED LOGISTICS | 17 Correct Fleets</title>
+<script src="https://sdk.minepi.com/pi-sdk.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial}
+body{background:#f7f9fc}header{background:#001a4d;color:#fff;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:200}
+header h1{color:#ffcc00;font-size:14px}.btn-pi{background:#ffcc00;color:#001a4d;padding:8px 16px;border-radius:20px;border:none;font-weight:bold;cursor:pointer}
+#piStatus{padding:10px;text-align:center;font-weight:bold;display:none}
+.tabs{display:flex;background:#001a4d;gap:6px;padding:6px;justify-content:center}
+.tab{padding:6px 14px;border-radius:20px;border:1px solid #ffcc00;color:#ffcc00;background:transparent;font-weight:bold;font-size:11px;cursor:pointer}
+.tab.active{background:#ffcc00;color:#001a4d}
+.hero{background:#0a1f44;color:#fff;padding:7px;text-align:center;font-size:10px}
+.box{margin:8px;background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 6px #0001}
+.box h2{color:#001a4d;font-size:15px;margin-bottom:8px}
+input,select,textarea{width:100%;padding:11px;margin:4px 0;border:1px solid #ccc;border-radius:8px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px}
+.card{background:#fff;border:2px solid #ffcc00;border-radius:12px;overflow:hidden}
+.card img{width:100%;height:115px;object-fit:cover;background:#eee;display:block}
+.card-body{padding:6px;text-align:center;font-size:11px}
+.hire{width:100%;padding:8px;background:#ffcc00;border:none;border-radius:7px;font-weight:bold;margin-top:4px;cursor:pointer}
+small{font-size:8px;color:#888;word-break:break-all}
+</style></head><body>
+<header><h1>REVEALED LOGISTICS</h1><button class="btn-pi" onclick="doLogin()">Login Pi</button></header>
+<div id="piStatus"></div>
+<div class="tabs"><button class="tab active" id="tabTest" onclick="setMode('test')">🟡 Testnet ON</button><button class="tab" id="tabMain" onclick="setMode('main')">🟢 Mainnet OFF</button></div>
+<div class="hero">17 REAL TRUCKS CORRECT | revealed.logistics@gmail.com | Pi Payments</div>
+
+<div class="box">
+<h2>📍 Cities, Distance, Qty, Pickup / Drop</h2>
+<div style="display:flex;gap:6px">
+<select id="fromCity"><option>Johannesburg</option><option>Pretoria</option><option>Durban</option><option>Cape Town</option><option>Bloemfontein</option><option>Polokwane</option><option>Gqeberha</option><option>East London</option></select>
+<select id="toCity"><option>Durban</option><option>Johannesburg</option><option>Pretoria</option><option>Cape Town</option><option>Bloemfontein</option></select>
+</div>
+<input id="pickupPoint" placeholder="📦 Pickup Point" value="Harrison road 76"><input id="dropPoint" placeholder="🏁 Drop Point" value="Can halia 36">
+<div style="display:flex;gap:6px">
+<select id="quantity"><option value="1">Qty: 1 Load</option><option value="2" selected>Qty: 2 Loads</option><option value="3">Qty: 3 Loads</option><option value="5">Qty: 5+ Loads</option></select>
+<select id="cargoType"><option>General Cargo</option><option>Building Material</option><option>Coal / Chrome</option><option>Furniture</option><option>Chemical</option><option>Water</option><option>Animals</option></select>
+</div>
+<button onclick="calc()" style="width:100%;padding:12px;background:#001a4d;color:#fff;border-radius:8px;font-weight:bold;border:none;margin-top:6px">📏 Calculate Distance & Pi Price</button>
+<div id="calcRes" style="margin-top:8px;background:#eef4ff;padding:10px;border-radius:8px;font-weight:bold">Tap Calculate</div>
+<p id="fleetSel" style="margin-top:8px;background:#fff6cc;padding:8px;border-radius:6px">No fleet selected - tap Hire below</p>
+</div>
+
+<div class="grid" id="fleetGrid"></div>
+
+<div class="box">
+<h2>📦 Request Quote & Pay Pi</h2>
+<input id="cName" placeholder="Your Name"><input id="cPhone" value="+27607263726"><input id="cEmail" type="email" placeholder="Your Email CC"><textarea id="cNote" rows="2" placeholder="Note"></textarea>
+<button id="payBtn" onclick="quote()" style="width:100%;padding:14px;background:#ffcc00;font-weight:bold;border-radius:8px;border:none">💛 Pay with Pi & Send Quote</button>
+</div>
+
+<script>
+let piUser=null, selName="", selPrice=0, distKm=0, mode='test';
+const fleet=[
+{name:"Fuel Tankers", file:"IMG-20260916-WA0687.jpg", price:6},
+{name:"Refrigerated", file:"IMG-20260916-WA1910.jpg", price:7},
+{name:"Low Bed", file:"IMG-20260916-WA2791.jpg", price:9},
+{name:"Side Tipper", file:"IMG-20260916-WA5229.jpg", price:5},
+{name:"Flat Deck", file:"IMG-20260916-WA6953.jpg", price:6},
+{name:"Side Curtain", file:"IMG-20260916-WA7873.jpg", price:5},
+{name:"Tautliner", file:"IMG-20260916-WA8594.jpg", price:5},
+{name:"Panel Van", file:"IMG-20260916-WA9084.jpg", price:2},
+{name:"Chemical Carrier", file:"IMG-20260924-WA1475.jpg", price:7},
+{name:"Water Tanker", file:"IMG-20260924-WA1744.jpg", price:6},
+{name:"Animal Carriers", file:"IMG-20260924-WA1869.jpg", price:7},
+{name:"Drinking Water Tanker", file:"IMG-20260924-WA2611.jpg", price:6},
+{name:"Gas Carriers", file:"IMG-20260924-WA5738.jpg", price:8},
+{name:"Furniture Removals", file:"IMG-20260924-WA6729.jpg", price:5},
+{name:"Heavy Duty Tow Truck", file:"IMG-20260924-WA6975.jpg", price:8},
+{name:"Flat Bed", file:"IMG-20260924-WA8680.jpg", price:6},
+{name:"Ready Mixer", file:"IMG-20260924-WA9107.jpg", price:6}
+];
+function status(m,c){let e=document.getElementById('piStatus');e.style.display='block';e.style.background=c||'#fff3cd';e.innerText=m;}
+function setMode(m){mode=m;document.getElementById('tabTest').classList.toggle('active',m==='test');document.getElementById('tabMain').classList.toggle('active',m==='main');initPi();}
+function initPi(){try{Pi.init({version:"2.0", sandbox:(mode==='test')}); status(`Pi SDK ${mode==='test'?'TESTNET':'MAINNET'} Loaded ✅ - Login in Pi Browser`,"#ccffcc");}catch(e){status(e.message,"#ffcccc");}}
+window.addEventListener('load',()=>{setTimeout(()=>{initPi(); renderTrucks();},800);});
+function renderTrucks(){
+ let h=""; fleet.forEach((t,i)=>{
+  // try both exact file and WA2611 typo fix
+  let tryFiles = [t.file, t.file.replace('WA2611','WA2611').replace('20260934','20260924'), t.file.toLowerCase()];
+  h+=`<div class="card"><img src="${t.file}" loading="lazy" onerror="this.onerror=null; this.src='${t.file.replace('IMG-20260934','IMG-20260924')}'; this.onerror=function(){this.src='https://images.unsplash.com/photo-1580674285054-bed31e145f59?w=400'}"><div class="card-body"><b>${i+1}. ${t.name}</b><br><small>${t.file}</small><button class="hire" onclick="pick('${t.name}',${t.price})">Hire - ${t.price} Pi</button></div></div>`;
+ }); document.getElementById('fleetGrid').innerHTML=h;
+}
+function pick(n,p){selName=n; selPrice=p; fleetSel.innerText=`Selected: ${n} - ${p} Pi`; fleetSel.scrollIntoView({behavior:'smooth'});}
+const mapDist={"Johannesburg-Durban":568,"Durban-Johannesburg":568,"Johannesburg-Cape Town":1400,"Cape Town-Johannesburg":1400,"Johannesburg-Bloemfontein":400,"Johannesburg-Pretoria":58};
+function calc(){let f=fromCity.value,t=toCity.value,qty=parseInt(quantity.value)||1;let km=mapDist[f+"-"+t]||550; if(f===t)km=30; distKm=km; let total=((selPrice||5)+(km*0.009*qty)).toFixed(2); calcRes.innerHTML=`From:${f} Pickup:${pickupPoint.value} To:${t} Drop:${dropPoint.value} Dist:${km}km Qty:${qty} Price:π ${total} Fleet:${selName}`;}
+async function doLogin(){if(typeof Pi==='undefined'){status("Open in Pi Browser!","#ffcccc");return;} status("⏳ Waiting Pi popup..."); try{let a=await Pi.authenticate(['username','payments'],()=>{}); piUser=a.user; localStorage.setItem('piUser',JSON.stringify(piUser)); status(`✅ Welcome ${a.user.username} - Pi Connected!`,"#ccffcc");}catch(e){status(`❌ ${e.message}`,"#ffcccc");}}
+
+function quote(){
+ let pickup=pickupPoint.value, drop=dropPoint.value;
+ if(!selName){alert("Tap Hire");return;}
+ if(!pickup||!drop){alert("Enter Pickup/Drop");return;}
+ if(!piUser){doLogin();return;}
+ let m=calcRes.innerText.match(/Price:.*π\s*([0-9.]+)/); let payAmount=m?parseFloat(m[1]):selPrice; if(payAmount<1)payAmount=selPrice;
+ let btn=document.getElementById('payBtn'); btn.disabled=true; btn.innerText=`⏳ Opening Pi Wallet π ${payAmount}...`;
+ Pi.createPayment({amount: payAmount, memo: `Revealed ${selName} ${fromCity.value}->${toCity.value} ${distKm}km Qty:${quantity.value}`, metadata:{fleet:selName, pickup, drop, dist:distKm}},{
+  onReadyForServerApproval: function(id){status(`⏳ Approving ${id} for π ${payAmount}...`,"#fff3cd"); fetch('/api/approve',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentId:id})}).catch(()=>{});},
+  onReadyForServerCompletion: function(id, txid){
+   status(`✅ PAID π ${payAmount} TX:${txid}`,"#ccffcc"); btn.innerText=`✅ PAID π ${payAmount}!`;
+   let txt=`REVEALED LOGISTICS - PAID π ${payAmount}\nFleet:${selName} File:${fleet.find(f=>f.name===selName)?.file}\nFrom:${fromCity.value} Pickup:${pickup}\nTo:${toCity.value} Drop:${drop}\nDist:${distKm}km Qty:${quantity.value}\nTXID:${txid}\nPi:${piUser.username}\nPhone:${cPhone.value}`;
+   setTimeout(()=>{let subj=encodeURIComponent(`PAID π${payAmount} - ${selName}`); let body=encodeURIComponent(txt); location.href=`mailto:revealed.logistics@gmail.com?cc=${cEmail.value}&subject=${subj}&body=${body}`; setTimeout(()=>{open(`https://wa.me/27607263726?text=${encodeURIComponent(txt)}`,'_blank'); btn.disabled=false; btn.innerText=`💛 Pay with Pi & Send Quote`;},1000);},800);
+   fetch('/api/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentId:id, txid})}).catch(()=>{});
+  },
+  onCancel: function(){status("❌ Cancelled","#ffcccc"); btn.disabled=false; btn.innerText=`💛 Pay with Pi & Send Quote`;},
+  onError: function(e){status(`❌ ${e.message}`,"#ffcccc"); btn.disabled=false; btn.innerText=`💛 Pay with Pi & Send Quote`;}
+ });
+}
+</script>
+</body></html>
