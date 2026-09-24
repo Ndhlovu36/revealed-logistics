@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>REVEALED LOGISTICS</title>
+<style>
+body{background:#001a4d;color:#fff;font-family:Arial;padding:10px;text-align:center}
+.inp{width:92%;padding:12px;margin:6px;border-radius:10px;border:0;font-size:16px}
+.sel{width:95%;padding:12px;margin:6px;border-radius:10px;border:0;background:white;font-weight:bold}
+.btn{padding:14px;border-radius:10px;border:0;font-weight:bold;margin:6px;cursor:pointer;width:95%}
+.btn-pi{background:gold;color:#000;padding:14px;width:48%;border-radius:12px;font-size:16px;border:0}
+.btn-cancel{background:#ff3b3b;color:#fff;padding:14px;width:48%;border-radius:12px;font-size:16px;border:0}
+.fleet{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px}
+.card{background:#fff;color:#000;border-radius:12px;overflow:hidden;padding-bottom:8px;cursor:pointer;border:3px solid transparent}
+.card img{width:100%;height:90px;object-fit:cover}
+.card.selected{border-color:gold}
+.status{background:#000;padding:12px;border-radius:8px;margin:10px;font-size:13px;word-break:break-word}
+.dist-box{background:#fff;color:#000;padding:14px;border-radius:12px;margin:10px;text-align:left;display:none}
+.price-big{font-size:26px;background:gold;color:#001a4d;padding:8px 14px;border-radius:8px;display:inline-block;font-weight:bold}
+.email-box{background:#ffeb3b;color:#000;padding:14px;border-radius:10px;margin:15px 10px;font-weight:bold}
+</style>
+<script src="https://sdk.minepi.com/pi-sdk.js"></script>
+</head>
+<body>
+<h2>REVEALED LOGISTICS - 90+ CITIES</h2>
+
+<button class="btn" id="loginBtn" style="background:white;color:#000;" onclick="login()">🔐 Login with Pi - TAP</button>
+<p id="browserCheck" style="color:yellow;font-size:12px"></p>
+
+<datalist id="saCities">
+<option value="Johannesburg"><option value="Pretoria"><option value="Durban"><option value="Cape Town"><option value="Midrand"><option value="Sandton"><option value="Polokwane"><option value="Bloemfontein"><option value="Gqeberha"><option value="Port Elizabeth"><option value="East London"><option value="Mbombela"><option value="Nelspruit"><option value="Rustenburg"><option value="Kimberley"><option value="Pinetown"><option value="Pietermaritzburg"><option value="Stellenbosch"><option value="Paarl"><option value="George"><option value="Witbank"><option value="eMalahleni"><option value="Centurion"><option value="Soweto"><option value="Boksburg"><option value="Benoni"><option value="Krugersdorp"><option value="Vereeniging"><option value="Welkom"><option value="Kroonstad"><option value="Tzaneen"><option value="Thohoyandou"><option value="Upington"><option value="Mthatha"><option value="Queenstown"><option value="Mahikeng"><option value="Klerksdorp"><option value="Potchefstroom"><option value="Newcastle"><option value="Richards Bay"><option value="Ballito"><option value="Umhlanga"><option value="Knysna"><option value="Mossel Bay">
+</datalist>
+
+<input id="pickup" class="inp" list="saCities" placeholder="Pickup - e.g. Johannesburg" oninput="updateQuote()">
+<input id="drop" class="inp" list="saCities" placeholder="Drop - e.g. Cape Town" oninput="updateQuote()">
+
+<div style="background:#002366;padding:10px;border-radius:10px;margin:10px;border:1px solid gold">
+<b>⚖️ Tons</b><br>
+<select id="tons" class="sel" onchange="updateQuote()">
+<option value="">-- Select --</option>
+<option value="1">1T</option><option value="5">5T</option><option value="10">10T</option><option value="20">20T</option><option value="34" selected>34T Full</option><option value="50">50T Abnormal</option>
+</select>
+</div>
+
+<div id="distBox" class="dist-box"></div>
+
+<div class="fleet">
+<div class="card" onclick="selectFleet(this,'Side Tipper',0.0045,8,34)"><img src="IMG-20260918-WA0397.jpg"><b>Side Tipper</b><br><small>34T</small></div>
+<div class="card" onclick="selectFleet(this,'Flat Deck',0.0038,6,34)"><img src="IMG-20260916-WA8594.jpg"><b>Flat Deck</b><br><small>34T</small></div>
+<div class="card" onclick="selectFleet(this,'Side Curtain',0.0035,5,30)"><img src="IMG-20260916-WA7873.jpg"><b>Side Curtain</b><br><small>30T</small></div>
+<div class="card" onclick="selectFleet(this,'Panel Van',0.0018,1.2,1.5)"><img src="IMG-20260916-WA9084.jpg"><b>Panel Van</b><br><small>1.5T</small></div>
+<div class="card" onclick="selectFleet(this,'Abnormal Load',0.008,12,60)"><img src="IMG-20260916-WA2791.jpg"><b>Abnormal Load</b><br><small>60T</small></div>
+<div class="card" onclick="selectFleet(this,'Refrigerated',0.005,7,28)"><img src="IMG-20260916-WA1910.jpg"><b>Refrigerated</b><br><small>Reefer 28T</small></div>
+<div class="card" onclick="selectFleet(this,'Fuel Tanker',0.006,9,34)"><img src="IMG-20260916-WA0687.jpg"><b>Fuel Tanker</b><br><small>34T</small></div>
+<div class="card" onclick="selectFleet(this,'8th Fleet',0.004,6,34)"><img src="IMG-20260918-WA0397.jpg"><b>8th Fleet</b><br><small>34T</small></div>
+</div>
+
+<input type="hidden" id="truck"><input type="hidden" id="truckRate"><input type="hidden" id="truckBase"><input type="hidden" id="truckMax">
+
+<div id="actionBar" style="display:none;margin:10px">
+<button class="btn btn-cancel" onclick="cancelQuote()">❌ Cancel</button>
+<button class="btn btn-pi" onclick="pay()">💳 Pay Pi</button>
+</div>
+
+<div id="status" class="status">Checking browser...</div>
+
+<div class="email-box">📧 revealed.logistics@gmail.com</div>
+
+<script>
+const coords={"Johannesburg":{lat:-26.2041,lon:28.0473},"Pretoria":{lat:-25.7479,lon:28.2293},"Durban":{lat:-29.8587,lon:31.0218},"Cape Town":{lat:-33.9249,lon:18.4241},"Midrand":{lat:-25.9987,lon:28.1284},"Sandton":{lat:-26.1061,lon:28.0567},"Polokwane":{lat:-23.9045,lon:29.4689},"Bloemfontein":{lat:-29.0852,lon:26.1596},"Gqeberha":{lat:-33.9608,lon:25.6022},"Port Elizabeth":{lat:-33.9608,lon:25.6022},"East London":{lat:-33.0153,lon:27.9116},"Mbombela":{lat:-25.4753,lon:30.9694},"Nelspruit":{lat:-25.4753,lon:30.9694},"Rustenburg":{lat:-25.6678,lon:27.2419},"Kimberley":{lat:-28.7282,lon:24.7499},"Pinetown":{lat:-29.8186,lon:30.8549},"Pietermaritzburg":{lat:-29.6006,lon:30.3794},"Stellenbosch":{lat:-33.9321,lon:18.8602},"Paarl":{lat:-33.7341,lon:18.9626},"George":{lat:-33.9635,lon:22.4617},"Witbank":{lat:-25.8727,lon:29.2406},"eMalahleni":{lat:-25.8727,lon:29.2406},"Centurion":{lat:-25.8603,lon:28.1894},"Soweto":{lat:-26.2678,lon:27.8585},"Boksburg":{lat:-26.2114,lon:28.2578},"Benoni":{lat:-26.1885,lon:28.3206},"Krugersdorp":{lat:-26.1009,lon:27.7759},"Vereeniging":{lat:-26.6731,lon:27.9261},"Welkom":{lat:-27.9837,lon:26.7341},"Kroonstad":{lat:-27.6523,lon:27.2321},"Tzaneen":{lat:-23.8323,lon:30.1611},"Thohoyandou":{lat:-22.9577,lon:30.4487},"Upington":{lat:-28.4472,lon:21.256},"Mthatha":{lat:-31.5886,lon:28.7841},"Queenstown":{lat:-31.8977,lon:26.8755},"Mahikeng":{lat:-25.8602,lon:25.6403},"Klerksdorp":{lat:-26.8521,lon:26.6665},"Potchefstroom":{lat:-26.7135,lon:27.0957},"Newcastle":{lat:-27.7577,lon:29.9271},"Richards Bay":{lat:-28.7807,lon:32.0383},"Ballito":{lat:-29.5396,lon:31.2136},"Umhlanga":{lat:-29.7251,lon:31.0827},"Knysna":{lat:-34.0363,lon:23.0474},"Mossel Bay":{lat:-34.1806,lon:22.1463}};
+function hav(a,b){const R=6371,dLat=(b.lat-a.lat)*Math.PI/180,dLon=(b.lon-a.lon)*Math.PI/180,la1=a.lat*Math.PI/180,la2=b.lat*Math.PI/180,x=Math.sin(dLat/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)**2;return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));}
+let user=null,sel=null,lastKm=0,curPrice=0,piReady=false;
+try{Pi.init({version:"2.0",sandbox:true});piReady=true;document.getElementById('status').innerText="Pi SDK Ready - 40+ cities loaded";}catch(e){document.getElementById('status').innerText="Pi SDK failed - Must be Pi Browser";}
+const isPiBrowser = navigator.userAgent.includes('PiBrowser') || window Pi && window Pi.nativeFeaturesList;
+document.getElementById('browserCheck').innerText = isPiBrowser? "✅ Pi Browser detected" : "⚠️ You are in Chrome - Login will timeout. Open in Pi Browser: Pi App > Pi Browser > l-logistics.vercel.app";
+
+function selectFleet(el,n,r,b,m){if(sel)sel.classList.remove('selected');el.classList.add('selected');sel=el;document.getElementById('truck').value=n;document.getElementById('truckRate').value=r;document.getElementById('truckBase').value=b;document.getElementById('truckMax').value=m;updateQuote();}
+function updateQuote(){
+ let pu=document.getElementById('pickup').value.trim(),dr=document.getElementById('drop').value.trim(),tons=parseFloat(document.getElementById('tons').value)||34;
+ let tr=document.getElementById('truck').value,rate=parseFloat(document.getElementById('truckRate').value)||0.0045,base=parseFloat(document.getElementById('truckBase').value)||8;
+ let box=document.getElementById('distBox'),bar=document.getElementById('actionBar');
+ if(!pu||!dr||!coords[pu]||!coords[dr]){if(pu&&dr) {box.style.display='block';box.innerHTML='Type city from list...'} return;}
+ let km=Math.round(hav(coords[pu],coords[dr])*1.28);lastKm=km;
+ let price=Math.round((base+km*rate+tons*0.12)*100)/100;curPrice=price;window.currentPrice=price;
+ box.style.display='block';bar.style.display='block';
+ box.innerHTML=`📏 <b>${pu} → ${dr}</b> = <b>${km}km</b><br>⚖️ ${tons}T | ${tr||'Tap truck'}<br><span class="price-big">π ${price}</span>`;
+}
+function cancelQuote(){document.getElementById('pickup').value='';document.getElementById('drop').value='';document.getElementById('tons').value='34';if(sel)sel.classList.remove('selected');sel=null;document.getElementById('distBox').style.display='none';document.getElementById('actionBar').style.display='none';}
+
+async function login(){
+ let btn=document.getElementById('loginBtn');
+ if(!piReady){alert('Pi SDK not loaded - Open in Pi Browser');return;}
+ btn.disabled=true; btn.innerText='Connecting... Wait 5 sec';
+ document.getElementById('status').innerText='Connecting... If Chrome, will timeout in 5 sec';
+
+ // CRITICAL: Promise race to prevent freeze
+ const timeoutPromise = new Promise((_,reject)=>setTimeout(()=>reject(new Error('TIMEOUT_NOT_PI_BROWSER')), 5000));
+ const loginPromise = Pi.authenticate(['username','payments'], p=>fetch('/api/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentId:p.identifier,txid:p.transaction.txid})}));
+
+ try{
+  const auth = await Promise.race(
