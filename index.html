@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>REVEALED LOGISTICS | 17 Real Fleets</title>
+<script src="https://sdk.minepi.com/pi-sdk.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial}
+body{background:#f7f9fc}header{background:#001a4d;color:#fff;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:200}
+header h1{color:#ffcc00;font-size:15px}.btn-pi{background:#ffcc00;color:#001a4d;padding:8px 16px;border-radius:20px;border:none;font-weight:bold}
+#piStatus{padding:10px;text-align:center;font-weight:bold;display:none}
+.tabs{display:flex;background:#001a4d;gap:6px;padding:6px;justify-content:center}
+.tab{padding:6px 14px;border-radius:20px;border:1px solid #ffcc00;color:#ffcc00;background:transparent;font-weight:bold;font-size:12px}
+.tab.active{background:#ffcc00;color:#001a4d}
+.hero{background:#0a1f44;color:#fff;padding:8px;text-align:center;font-size:12px}
+.box{margin:8px;background:#fff;border-radius:12px;padding:12px}
+input,select,textarea{width:100%;padding:11px;margin:4px 0;border:1px solid #ccc;border-radius:8px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px}
+.card{background:#fff;border:2px solid #ffcc00;border-radius:12px;overflow:hidden}
+.card img{width:100%;height:115px;object-fit:cover;background:#e5e5e5;display:block}
+.card-body{padding:6px;text-align:center;font-size:12px}
+.hire{width:100%;padding:8px;background:#ffcc00;border:none;border-radius:7px;font-weight:bold;margin-top:4px}
+small{font-size:9px;color:#666;word-break:break-all}
+</style></head><body>
+<header><h1>REVEALED LOGISTICS</h1><button class="btn-pi" onclick="doLogin()">Login Pi</button></header>
+<div id="piStatus">Loading Pi SDK...</div>
+<div class="tabs">
+<button class="tab active" id="tabTest" onclick="setMode('test')">🟡 Testnet (Sandbox ON)</button>
+<button class="tab" id="tabMain" onclick="setMode('main')">🟢 Mainnet (Sandbox OFF)</button>
+</div>
+<div class="hero">17 REAL TRUCKS | revealed.logistics@gmail.com | +27 60 726 3726</div>
+
+<div class="box">
+<h2>📍 Cities, Distance, Qty, Pickup / Drop</h2>
+<div style="display:flex;gap:6px">
+<select id="fromCity"><option>Johannesburg</option><option>Pretoria</option><option>Durban</option><option>Cape Town</option><option>Bloemfontein</option><option>Polokwane</option><option>Gqeberha</option><option>East London</option></select>
+<select id="toCity"><option>Durban</option><option>Johannesburg</option><option>Pretoria</option><option>Cape Town</option><option>Bloemfontein</option></select>
+</div>
+<input id="pickupPoint" placeholder="📦 Pickup Point - Street / Farm / Mine">
+<input id="dropPoint" placeholder="🏁 Drop Point - Warehouse / Site">
+<div style="display:flex;gap:6px">
+<select id="quantity"><option value="1">Qty: 1 Load</option><option value="2">Qty: 2 Loads</option><option value="3">Qty: 3 Loads</option><option value="5">Qty: 5+ Loads</option></select>
+<select id="cargoType"><option>General Cargo</option><option>Building Material</option><option>Coal / Chrome</option><option>Furniture</option><option>Abnormal Load</option></select>
+</div>
+<button onclick="calc()" style="width:100%;padding:12px;background:#001a4d;color:#fff;border-radius:8px;font-weight:bold;border:none;margin-top:6px">📏 Calculate Distance & Pi Price</button>
+<div id="calcRes" style="margin-top:8px;background:#eef4ff;padding:10px;border-radius:8px;font-weight:bold">Select cities & tap Calculate</div>
+<p id="fleetSel" style="margin-top:8px;background:#fff6cc;padding:8px;border-radius:6px">No fleet selected - tap Hire below</p>
+</div>
+
+<div class="grid" id="fleetGrid">🔍 Scanning GitHub root for your 17 images...</div>
+
+<div class="box">
+<h2>📦 Request Quote & Pay Pi</h2>
+<input id="cName" placeholder="Your Name"><input id="cPhone" value="+27607263726"><input id="cEmail" type="email" placeholder="Your Email CC"><textarea id="cNote" rows="2" placeholder="Note"></textarea>
+<button onclick="quote()" style="width:100%;padding:14px;background:#ffcc00;font-weight:bold;border-radius:8px;border:none">Send to Email + WhatsApp</button>
+</div>
+
+<script>
+let piUser=null, selName="", selPrice=0, distKm=0, mode='test';
+const fleetNames=["Side Tipper","Tautliner","Flat Deck","Abnormal Load","Fuel Tank","Refrigerated","Box Body","Dropside","Tanker","Lowbed","Tipper","Panel Van","Horse Trailer","Crane Truck","Interlink","Superlink","Mixer"];
+const fleetPrices=[5,5,6,8,6,7,4,4,6,9,5,2,7,8,8,9,6];
+function status(m,c){let e=document.getElementById('piStatus');e.style.display='block';e.style.background=c||'#fff3cd';e.innerText=m;}
+function setMode(m){mode=m;document.getElementById('tabTest').classList.toggle('active',m==='test');document.getElementById('tabMain').classList.toggle('active',m==='main');initPi();}
+function initPi(){try{Pi.init({version:"2.0", sandbox:(mode==='test')}); status(`Pi SDK Loaded ✅ ${mode==='test'?'TESTNET':'MAINNET'} - Tap Login in Pi Browser`,"#ccffcc");}catch(e){status("Pi error:"+e.message,"#ffcccc");}}
+window.addEventListener('load',()=>{setTimeout(()=>{initPi(); loadImages();},900);});
+async function loadImages(){
+  try{
+    let res=await fetch('https://api.github.com/repos/Ndhlovu36/revealed-logistics/contents');
+    let files=await res.json();
+    let imgs=files.filter(f=>f.name.toLowerCase().endsWith('.jpg')).filter(f=>f.name.toUpperCase().startsWith('IMG-')).sort((a,b)=>a.name.localeCompare(b.name));
+    status(`Found ${imgs.length} real images ✅`,"#ccffcc");
+    let h="";
+    imgs.slice(0,17).forEach((img,i)=>{
+      h+=`<div class="card"><img src="${img.download_url}" onerror="this.src='${img.name}'"><div class="card-body"><b>${i+1}. ${fleetNames[i]}</b><br><small>${img.name}</small><button class="hire" onclick="pick('${fleetNames[i]}',${fleetPrices[i]})">Hire - ${fleetPrices[i]} Pi</button></div></div>`;
+    });
+    document.getElementById('fleetGrid').innerHTML=h;
+  }catch(e){document.getElementById('fleetGrid').innerHTML="Make repo Public in Settings > General > Danger Zone > Change visibility > Public. Error: "+e.message;}
+}
+async function doLogin(){if(typeof Pi==='undefined'){status("❌ Open in Pi Browser!","#ffcccc");return;}status("⏳ Waiting popup...");try{let a=await Pi.authenticate(['username','payments'],()=>{});piUser=a.user;localStorage.setItem('piUser',JSON.stringify(piUser));status(`✅ Welcome ${a.user.username} - Connected!`,"#ccffcc");}catch(err){status(`❌ ${err.message}`,"#ffcccc");}}
+function pick(n,p){selName=n;selPrice=p;document.getElementById('fleetSel').innerText=`Selected: ${n} - ${p} Pi`;}
+const mapDist={"Johannesburg-Durban":568,"Durban-Johannesburg":568,"Johannesburg-Cape Town":1400};
+function calc(){let f=fromCity.value,t=toCity.value,qty=parseInt(quantity.value)||1;let km=mapDist[f+"-"+t]||550;if(f===t)km=30;distKm=km;let total=((selPrice||5)+(km*0.009*qty)).toFixed(2);calcRes.innerHTML=`From:${f} Pickup:${pickupPoint.value||'--'}<br>To:${t} Drop:${dropPoint.value||'--'}<br>Dist:${km}km Qty:${qty} Price:π ${total}<br>Fleet:${selName}`;}
+function quote(){if(!selName){alert("Tap Hire first");return;}let txt=`Fleet:${selName} From:${fromCity.value} Pickup:${pickupPoint.value} To:${toCity.value} Drop:${dropPoint.value} Dist:${distKm}km Qty:${quantity.value} Pi:${piUser?piUser.username:'Guest'}`;let body=encodeURIComponent(txt);location.href=`mailto:revealed.logistics@gmail.com?cc=${cEmail.value}&subject=Quote ${selName}&body=${body}`;setTimeout(()=>{open(`https://wa.me/27607263726?text=${encodeURIComponent(txt)}`,'_blank');},800);}
+</script></body></html>
