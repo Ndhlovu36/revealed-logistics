@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>REVEALED LOGISTICS 17 Fleets Real</title>
+<script src="https://sdk.minepi.com/pi-sdk.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial}body{background:#f7f9fc}
+header{background:#001a4d;color:#fff;padding:12px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100}
+header h1{color:#ffcc00;font-size:16px}.btn-pi{background:#ffcc00;color:#001a4d;padding:8px 14px;border-radius:20px;border:none;font-weight:bold}
+#piStatus{margin:8px;padding:10px;border-radius:8px;text-align:center;font-weight:bold;display:none}
+.hero{background:#001a4d;color:#fff;padding:14px;text-align:center}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px}
+.card{background:#fff;border-radius:12px;overflow:hidden;border:2px solid #ffcc00;box-shadow:0 2px 6px #0001}
+.card img{width:100%;height:120px;object-fit:cover;background:#eee}
+.card-body{padding:6px;text-align:center}.hire{width:100%;padding:8px;background:#ffcc00;border:none;border-radius:7px;font-weight:bold}
+section{margin:10px;background:#fff;border-radius:12px;padding:12px}input,select{width:100%;padding:11px;margin:4px 0;border:1px solid #ccc;border-radius:8px}
+.wa-float{position:fixed;bottom:85px;right:14px;background:#25D366;color:#fff;width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;text-decoration:none;z-index:200}
+</style></head><body>
+<header><h1>REVEALED LOGISTICS</h1><button class="btn-pi" onclick="loginWithPi()">Login Pi</button></header>
+<div id="piStatus"></div>
+<div class="hero"><h3>17 Real Fleets | Pay with Pi | revealed.logistics@gmail.com</h3></div>
+
+<section><h3>📍 Distance Calculator</h3><div style="display:flex;gap:6px"><select id="fromCity"><option>Johannesburg</option><option>Pretoria</option><option>Durban</option><option>Cape Town</option><option>Bloemfontein</option></select><select id="toCity"><option>Durban</option><option>Johannesburg</option><option>Cape Town</option><option>Bloemfontein</option><option>Pretoria</option></select></div><button onclick="calcDist()" style="width:100%;margin-top:6px;padding:12px;background:#001a4d;color:#fff;border-radius:8px;font-weight:bold">Calculate</button><p id="distResult" style="margin-top:6px;background:#eef4ff;padding:8px;border-radius:6px;font-weight:bold"></p></section>
+
+<div class="grid">
+<!-- YOUR REAL IMAGES IN ROOT - NO RENAME NEEDED -->
+<div class="card"><img src="IMG-20260916-WA0001.jpg" onerror="this.src='IMG-20260916-WA0001.jpeg'; this.onerror=function(){this.src='https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=400'}"><div class="card-body"><b>1. Side Tipper</b><button class="hire" onclick="hireFleet('Side Tipper',5)">Hire - 5 Pi</button></div></div>
+
+<div class="card"><img src="IMG-20260916-WA0002.jpg" onerror="this.src='IMG-20260916-WA0002.jpeg'"><div class="card-body"><b>2. Tautliner</b><button class="hire" onclick="hireFleet('Tautliner',5)">Hire - 5 Pi</button></div></div>
+
+<div class="card"><img src="IMG-20260916-WA0003.jpg" onerror="this.src='IMG-20260916-WA0003.jpeg'"><div class="card-body"><b>3. Flat Deck</b><button class="hire" onclick="hireFleet('Flat Deck',6)">Hire - 6 Pi</button></div></div>
+
+<div class="card"><img src="IMG-20260916-WA0004.jpg" onerror="this.src='IMG-20260916-WA0004.jpeg'"><div class="card-body"><b>4. Abnormal Load</b><button class="hire" onclick="hireFleet('Abnormal Load',8)">Hire - 8 Pi</button></div></div>
+
+<div class="card"><img src="IMG-20260916-WA0007.jpg" onerror="this.src='IMG-20260916-WA0007.jpeg'"><div class="card-body"><b>5. Fuel Tank</b><button class="hire" onclick="hireFleet('Fuel Tank',6)">Hire - 6 Pi</button></div></div>
+
+<div class="card"><img src="IMG-20260916-WA0008.jpg" onerror="this.src='IMG-20260916-WA0008.jpeg'"><div class="card-body"><b>6. Refrigerated</b><button class="hire" onclick="hireFleet('Refrigerated',7)">Hire - 7 Pi</button></div></div>
+
+<div class="card"><img src="IMG-20260916-WA0009.jpg" onerror="this.src='IMG-20260916-WA0009.jpeg'"><div class="card-body"><b>7. Box Body</b><button class="hire" onclick="hireFleet('Box Body',4)">Hire - 4 Pi</button></div></div>
+
+<div class="card"><img src="IMG-20260918-WA0000.jpg" onerror="this.src='IMG-20260918-WA0000.jpeg'"><div class="card-body"><b>8. Dropside</b><button class="hire" onclick="hireFleet('Dropside',4)">Hire - 4 Pi</button></div></div>
+
+<div class="card"><img src="IMG-20260918-WA0001.jpg" onerror="this.src='IMG-20260918-WA0001.jpeg'"><div class="card-body"><b>9. Tanker</b><button class="hire" onclick="hireFleet('Tanker',6)">Hire - 6 Pi</button></div></div>
+
+<div class="card"><img src="IMG-20260918-WA0002.jpg" onerror="this.src='IMG-20260918-WA0002.jpeg'"><div class="card-body"><b>10. Lowbed</b><button class="hire" onclick="hireFleet('Lowbed',9)">Hire - 9 Pi</button></div></div>
+
+<div class="card"><img src="IMG-20260918-WA0003.jpg" onerror="this.src='IMG-20260918-WA0003.jpeg'"><div class="card-body"><b>11. Tipper</b><button class="hire" onclick="hireFleet('Tipper',5)">Hire - 5 Pi</button></div></div>
+
+<div class="card"><img src="IMG-20260918-WA0004.jpg" onerror="this.src='IMG-20260918-WA0004.jpeg'"><div class="card-body"><b>12. Panel Van</b><button class="hire" onclick="hireFleet('Panel Van',2)">Hire - 2 Pi</button></div></div>
+
+<div class="card"><img src="IMG-20260918-WA0005.jpg" onerror="this.src='IMG-20260918-WA0005.jpeg'"><div class="card-body"><b>13. Horse Trailer</b><button class="hire" onclick="hireFleet('Horse Trailer',7)">Hire - 7 Pi</button></div></div>
+
+<div class="card"><img src="IMG-20260918-WA0006.jpg" onerror="this.src='IMG-20260918-WA0006.jpeg'"><div class="card-body"><b>14. Crane Truck</b><button class="hire" onclick="hireFleet('Crane Truck',8)">Hire - 8 Pi</button></div></div>
+
+<div class="card"><img src="IMG-20260918-WA0007.jpg" onerror="this.src='IMG-20260918-WA0007.jpeg'"><div class="card-body"><b>15. Interlink</b><button class="hire" onclick="hireFleet('Interlink',8)">Hire - 8 Pi</button></div></div>
+
+<div class="card"><img src="IMG-20260918-WA0008.jpg" onerror="this.src='IMG-20260918-WA0008.jpeg'"><div class="card-body"><b>16. Superlink</b><button class="hire" onclick="hireFleet('Superlink',9)">Hire - 9 Pi</button></div></div>
+
+<div class="card"><img src="IMG-20260918-WA0009.jpg" onerror="this.src='IMG-20260918-WA0009.jpeg'"><div class="card-body"><b>17. Mixer</b><button class="hire" onclick="hireFleet('Mixer',6)">Hire - 6 Pi</button></div></div>
+</div>
+
+<section>
+<input id="pickup" placeholder="Pickup"><input id="drop" placeholder="Drop"><input id="phone" placeholder="WhatsApp">
+<button onclick="requestQuote()" style="width:100%;padding:12px;background:#ffcc00;font-weight:bold;border-radius:8px;border:none">Quote & Pay Pi</button>
+<p id="selectedFleet" style="margin-top:6px;background:#fff6cc;padding:6px;border-radius:6px"></p>
+<form onsubmit="sendEmail(event)" style="margin-top:10px;background:#f9f9f9;padding:10px;border-radius:8px">
+<input id="cName" placeholder="Name" required><input id="cEmail" type="email" placeholder="Your Email (CC)" required><textarea id="cMsg" placeholder="Message" required></textarea>
+<button type="submit" style="width:100%;padding:11px;background:#001a4d;color:#fff;border-radius:8px">Send to revealed.logistics@gmail.com</button>
+</form>
+</section>
+<a class="wa-float" href="https://wa.me/27607263726">💬</a>
+
+<script>
+let piUser=null,selectedFleetName="",selectedFleetPrice=0;
+function onIncomplete(p){console.log(p)}
+window.addEventListener('load',()=>{try{Pi.init({version:"2.0",sandbox:true});let el=document.getElementById('piStatus');el.style.display='block';el.style.background='#ccffcc';el.innerText='Pi SDK Loaded ✅ - Tap Login in Pi Browser';}catch(e){let el=document.getElementById('piStatus');el.style.display='block';el.style.background='#ffcccc';el.innerText='SDK Error: '+e.message}});
+async function loginWithPi(){let el=document.getElementById('piStatus');el.style.display='block';if(typeof Pi==='undefined'){el.style.background='#ffcccc';el.innerText='Open in Pi Browser App!';return}el.innerText='Connecting...';try{let a=await Pi.authenticate(['username','payments'],onIncomplete);piUser=a.user;localStorage.setItem('piUser',JSON.stringify(piUser));el.style.background='#ccffcc';el.innerText='Welcome '+piUser.username+' ✅';}catch(err){el.style.background='#ffcccc';el.innerText='Failed: '+err.message}}
+function hireFleet(n,p){selectedFleetName=n;selectedFleetPrice=p;selectedFleet.innerText='Selected: '+n+' - '+p+' Pi'}
+function calcDist(){let f=fromCity.value,t=toCity.value;let d=568;if(f===t)d=0;distResult.innerText=f+' -> '+t+' = '+d+' km';pickup.value=f;drop.value=t}
+function requestQuote(){if(!piUser){loginWithPi();return}let m='Quote '+selectedFleetName+' '+pickup.value+'->'+drop.value;window.open('https://wa.me/27607263726?text='+encodeURIComponent(m))}
+function sendEmail(e){e.preventDefault();let b='Name:'+cName.value+'\nEmail:'+cEmail.value+'\nMsg:'+cMsg.value+'\nFleet:'+selectedFleetName;location.href='mailto:revealed.logistics@gmail.com?cc='+cEmail.value+'&subject=Pi Quote&body='+encodeURIComponent(b)}
+</script></body></html>
