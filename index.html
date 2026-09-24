@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>REVEALED LOGISTICS 17 Fleets</title>
+<script src="https://sdk.minepi.com/pi-sdk.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial}
+body{background:#f7f9fc}header{background:#001a4d;color:#fff;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:200}
+header h1{color:#ffcc00;font-size:15px}.btn-pi{background:#ffcc00;color:#001a4d;padding:8px 16px;border-radius:20px;border:none;font-weight:bold}
+#piStatus{padding:10px;text-align:center;font-weight:bold;display:none}
+.tabs{display:flex;background:#001a4d;gap:6px;padding:6px;justify-content:center}
+.tab{padding:6px 14px;border-radius:20px;border:1px solid #ffcc00;color:#ffcc00;background:transparent;font-weight:bold;cursor:pointer;font-size:12px}
+.tab.active{background:#ffcc00;color:#001a4d}
+.hero{background:#0a1f44;color:#fff;padding:8px;text-align:center;font-size:12px}
+.box{margin:8px;background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 6px #0001}
+.box h2{color:#001a4d;font-size:15px;margin-bottom:8px}
+input,select,textarea{width:100%;padding:11px;margin:4px 0;border:1px solid #ccc;border-radius:8px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px}
+.card{background:#fff;border:2px solid #ffcc00;border-radius:12px;overflow:hidden}
+.card img{width:100%;height:115px;object-fit:cover;background:#e5e5e5}
+.card-body{padding:6px;text-align:center}
+.hire{width:100%;padding:8px;background:#ffcc00;border:none;border-radius:7px;font-weight:bold}
+.wa-float{position:fixed;bottom:80px;right:12px;background:#25D366;color:#fff;width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;text-decoration:none;z-index:300}
+</style></head><body>
+<header><h1>REVEALED LOGISTICS</h1><button class="btn-pi" onclick="doLogin()">Login Pi</button></header>
+<div id="piStatus"></div>
+<div class="tabs">
+<button class="tab active" id="tabTest" onclick="setMode('test')">🟡 Testnet (Sandbox ON)</button>
+<button class="tab" id="tabMain" onclick="setMode('main')">🟢 Mainnet (Sandbox OFF)</button>
+</div>
+<div class="hero">17 REAL TRUCKS | revealed.logistics@gmail.com | +27 60 726 3726</div>
+<div class="box">
+<h2>📍 Cities, Distance, Quantity, Pickup / Drop</h2>
+<div style="display:flex;gap:6px">
+<select id="fromCity"><option>Johannesburg</option><option>Pretoria</option><option>Durban</option><option>Cape Town</option><option>Bloemfontein</option><option>Polokwane</option><option>Gqeberha</option><option>East London</option></select>
+<select id="toCity"><option>Durban</option><option>Johannesburg</option><option>Pretoria</option><option>Cape Town</option><option>Bloemfontein</option></select>
+</div>
+<input id="pickupPoint" placeholder="📦 Pickup Point - Exact street / farm">
+<input id="dropPoint" placeholder="🏁 Drop Point - Exact street / warehouse">
+<div style="display:flex;gap:6px">
+<select id="quantity"><option value="1">Qty: 1 Load</option><option value="2">Qty: 2 Loads</option><option value="3">Qty: 3 Loads</option><option value="5">Qty: 5+ Loads</option></select>
+<select id="cargoType"><option>General Cargo</option><option>Building Material</option><option>Coal / Chrome</option><option>Furniture</option><option>Abnormal</option></select>
+</div>
+<button onclick="calc()" style="width:100%;padding:12px;background:#001a4d;color:#fff;border-radius:8px;font-weight:bold;border:none;margin-top:6px">📏 Calculate Distance & Pi Price</button>
+<div id="calcRes" style="margin-top:8px;background:#eef4ff;padding:10px;border-radius:8px;font-weight:bold">Select cities & tap Calculate</div>
+<p id="fleetSel" style="margin-top:8px;background:#fff6cc;padding:8px;border-radius:6px">No fleet selected - tap Hire below</p>
+</div>
+<div class="grid" id="fleetGrid"></div>
+<div class="box">
+<h2>📦 Request Quote & Pay Pi</h2>
+<input id="cName" placeholder="Your Full Name"><input id="cPhone" value="+27607263726"><input id="cEmail" type="email" placeholder="Your Email for CC"><textarea id="cNote" rows="2" placeholder="Note"></textarea>
+<button onclick="quote()" style="width:100%;padding:14px;background:#ffcc00;font-weight:bold;border-radius:8px;border:none">Send to revealed.logistics@gmail.com + WhatsApp</button>
+</div>
+<a class="wa-float" href="https://wa.me/27607263726">💬</a>
+<script>
+let piUser=null, selName="", selPrice=0, distKm=0, mode='test';
+let fleetData=[["Side Tipper",5,"IMG-20260916-WA2791.jpg"],["Tautliner",5,"IMG-20260916-WA6953.jpg"],["Flat Deck",6,"IMG-20260916-WA2791.jpg"],["Abnormal Load",8,"IMG-20260916-WA6953.jpg"],["Fuel Tank",6,"IMG-20260916-WA2791.jpg"],["Refrigerated",7,"IMG-20260916-WA6953.jpg"],["Box Body",4,"IMG-20260916-WA2791.jpg"],["Dropside",4,"IMG-20260916-WA6953.jpg"],["Tanker 32K",6,"IMG-20260916-WA2791.jpg"],["Lowbed",9,"IMG-20260916-WA6953.jpg"],["Tipper 8x4",5,"IMG-20260916-WA2791.jpg"],["Panel Van",2,"IMG-20260916-WA6953.jpg"],["Horse & Trailer",7,"IMG-20260916-WA2791.jpg"],["Crane Truck",8,"IMG-20260916-WA6953.jpg"],["Interlink",8,"IMG-20260916-WA2791.jpg"],["Superlink",9,"IMG-20260916-WA6953.jpg"],["Mixer Special",6,"IMG-20260916-WA2791.jpg"]];
+function renderFleet(){let h="";fleetData.forEach((f,i)=>{h+=`<div class="card"><img src="${f[2]}" onerror="this.src='${f[2].replace('.jpg','.jpeg')}';this.onerror=function(){this.src='https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=400'}"><div class="card-body"><b>${i+1}. ${f[0]}</b><button class="hire" onclick="pick('${f[0]}',${f[1]})">Hire - ${f[1]} Pi</button></div></div>`;});document.getElementById('fleetGrid').innerHTML=h;}
+renderFleet();
+function status(m,c){let e=document.getElementById('piStatus');e.style.display='block';e.style.background=c||'#fff3cd';e.innerText=m;}
+function setMode(m){mode=m;document.getElementById('tabTest').classList.toggle('active',m==='test');document.getElementById('tabMain').classList.toggle('active',m==='main');initPi();}
+function initPi(){try{Pi.init({version:"2.0",sandbox:(mode==='test')});status(`Pi SDK Loaded ✅ Mode:${mode==='test'?'TESTNET':'MAINNET'} - Tap Login in Pi Browser`,"#ccffcc");}catch(e){status("Pi error:"+e.message,"#ffcccc");}}
+window.addEventListener('load',()=>{setTimeout(initPi,800);let s=localStorage.getItem('piUser');if(s){try{piUser=JSON.parse(s);status("✅ Welcome "+piUser.username+" - Pi Connected!","#ccffcc");}catch{}}});
+async function doLogin(){if(typeof Pi==='undefined'){status("❌ Open in Pi Browser!","#ffcccc");return;}status("⏳ Waiting for popup...");try{let a=await Pi.authenticate(['username','payments'],()=>{});piUser=a.user;localStorage.setItem('piUser',JSON.stringify(piUser));status(`✅ Welcome ${a.user.username} - Connected!`,"#ccffcc");}catch(err){status(`❌ ${err.message} - Enable Sandbox in develop.pi`,"#ffcccc");}}
+function pick(n,p){selName=n;selPrice=p;document.getElementById('fleetSel').innerText=`Selected: ${n} - ${p} Pi`; }
+const mapDist={"Johannesburg-Durban":568,"Durban-Johannesburg":568,"Johannesburg-Cape Town":1400,"Cape Town-Johannesburg":1400,"Johannesburg-Bloemfontein":400,"Johannesburg-Pretoria":58,"Pretoria-Johannesburg":58};
+function calc(){let f=fromCity.value,t=toCity.value,qty=parseInt(quantity.value)||1;let pickup=pickupPoint.value,drop=dropPoint.value;let km=mapDist[f+"-"+t]||550;if(f===t)km=30;distKm=km;let total=((selPrice||5)+(km*0.009*qty)).toFixed(2);calcRes.innerHTML=`From:${f} | Pickup:${pickup||'--'}<br>To:${t} | Drop:${drop||'--'}<br>Distance:${km}km Qty:${qty} Price:π ${total}`;}
+function quote(){if(!selName){alert("Tap Hire first");return;}let txt=`Fleet:${selName} From:${fromCity.value} Pickup:${pickupPoint.value} To:${toCity.value} Drop:${dropPoint.value} Dist:${distKm}km Qty:${quantity.value} PiUser:${piUser?piUser.username:'Guest'}`;let subj=encodeURIComponent(`Quote ${selName}`);let body=encodeURIComponent(txt);location.href=`mailto:revealed.logistics@gmail.com?cc=${cEmail.value}&subject=${subj}&body=${body}`;setTimeout(()=>{open(`https://wa.me/27607263726?text=${encodeURIComponent(txt)}`,'_blank');},800);}
+</script></body></html>
