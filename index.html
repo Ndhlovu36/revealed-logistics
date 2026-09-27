@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>REVEALED LOGISTICS - 19 TRUCKS</title>
+<script src="https://sdk.minepi.com/pi-sdk.js"></script>
+<style>
+body{font-family:Arial;margin:0;background:#f0f2f5}
+header{background:#001a4d;color:#fff;padding:12px;text-align:center;position:sticky;top:0;z-index:99}
+.hero{background:#ffcc00;color:#001a4d;padding:14px;text-align:center;font-weight:bold;font-size:19px}
+.badge{background:red;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;padding:14px}
+.card{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.15);border:3px solid transparent}
+.card.today{border-color:#ffcc00;box-shadow:0 0 15px gold}
+.card img{width:100%;height:220px;object-fit:cover}
+.card-body{padding:12px}
+.btn{width:100%;background:#001a4d;color:#fff;border:none;padding:11px;border-radius:8px;font-weight:bold;margin-top:6px}
+.net{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:8px 0}
+.net button{padding:7px 14px;border-radius:20px;border:2px solid #ffcc00;background:transparent;color:#fff;font-weight:bold}
+.net button.active{background:#ffcc00;color:#001a4d}
+.quote{background:#fff;margin:14px;padding:16px;border-radius:14px}
+input{width:100%;padding:11px;margin:7px 0;border:1px solid #ccc;border-radius:8px;box-sizing:border-box}
+#piStatus{color:#ffcc00;font-weight:bold}
+</style>
+</head>
+<body>
+<header>
+<h2>REVEALED LOGISTICS</h2>
+<div id="piStatus">Pi Network - Not Logged In</div>
+<div class="net">
+<button id="bMain" class="active" onclick="setNet('mainnet')">MAINNET</button>
+<button id="bTest" onclick="setNet('testnet')">TESTNET</button>
+<button onclick="loginWithPi()" style="background:#ffcc00;color:#001a4d;border:none;padding:7px 14px;border-radius:20px;font-weight:bold">🔐 Login Pi</button>
+</div>
+</header>
+<div class="hero">19 REAL TRUCKS - TODAY HUGE FLEETS ADDED <span class="badge">NEW TODAY</span></div>
+<div class="grid" id="fleetGrid"></div>
+<div class="quote">
+<h3>Get Quote & Pay with Pi</h3>
+<input id="pickupPoint" placeholder="Pickup">
+<input id="dropPoint" placeholder="Drop">
+<input id="piUser" placeholder="Pi Username">
+<div id="calcRes" style="font-weight:bold;margin:10px 0">Select truck</div>
+<button class="btn" style="background:#ff8c00" onclick="quote()">Pay with Pi - π</button>
+<div id="status"></div>
+</div>
+<script>
+let currentNet='mainnet'; Pi.init({version:"2.0", sandbox:false});
+let selName="", selPrice=0, user=null;
+function onIncomplete(p){}
+async function loginWithPi(){ try{ const a=await Pi.authenticate(['username','payments'],onIncomplete); user=a.user; document.getElementById('piStatus').innerText="Welcome "+user.username+" ✅ "+currentNet.toUpperCase(); document.getElementById('piUser').value=user.username; }catch(e){ alert(e.message); } }
+function setNet(n){ currentNet=n; Pi.init({version:"2.0", sandbox: n==='testnet'}); document.getElementById('bMain').className=n==='mainnet'?'active':''; document.getElementById('bTest').className=n==='testnet'?'active':''; }
+
+const fleet=[
+{name:"TODAY - Side Tipper Double - Huge Fleet 7 Trucks BLUE", file:"IMG-20260927-WA7926.jpg", price:5, today:true},
+{name:"TODAY - Flat Deck - Huge Fleet 7 Trucks WHITE", file:"IMG-20260927-WA2466.jpg", price:6, today:true},
+{name:"Fuel Tanker - WA0687", file:"IMG-20260916-WA0687.jpg", price:6},
+{name:"Refrigerated - WA1910", file:"IMG-20260916-WA1910.jpg", price:7},
+{name:"Lowbed - WA2791", file:"IMG-20260916-WA2791.jpg", price:8},
+{name:"Flat Deck (OLD) - WA6953", file:"IMG-20260916-WA6953.jpg", price:6},
+{name:"Side Curtain - WA7873", file:"IMG-20260916-WA7873.jpg", price:5},
+{name:"Tautliner - WA8594", file:"IMG-20260916-WA8594.jpg", price:6},
+{name:"Van - WA9084", file:"IMG-20260916-WA9084.jpg", price:3},
+{name:"Chemical Carrier - WA0397", file:"IMG-20260918-WA0397.jpg", price:7},
+{name:"Chemical Carrier - WA1475", file:"IMG-20260924-WA1475.jpg", price:7},
+{name:"Water Tank - WA1744", file:"IMG-20260924-WA1744.jpg", price:5},
+{name:"Animal Carrier - WA1869", file:"IMG-20260924-WA1869.jpg", price:6},
+{name:"Drinking Water Tanker - WA2611", file:"IMG-20260924-WA2611.jpg", price:5},
+{name:"Gas Carrier - WA5738", file:"IMG-20260924-WA5738.jpg", price:7},
+{name:"Furniture Removal - WA6729", file:"IMG-20260924-WA6729.jpg", price:5},
+{name:"Heavy Duty Tow - WA6975", file:"IMG-20260924-WA6975.jpg", price:6},
+{name:"Flat Bed (OLD) - WA8680", file:"IMG-20260924-WA8680.jpg", price:6},
+{name:"Ready Mixer - WA9107", file:"IMG-20260924-WA9107.jpg", price:6}
+];
+
+const grid=document.getElementById('fleetGrid');
+for(let i=0;i<fleet.length;i++){
+ let f=fleet[i];
+ let cls = f.today? 'card today' : 'card';
+ let badge = f.today? ' <span class=badge>TODAY</span>' : '';
+ let d=document.createElement('div'); d.className=cls;
+ d.innerHTML='<img src="'+f.file+'?v=8"><div class="card-body"><b>'+f.name+badge+'</b><br>From π '+f.price+'<br><button class="btn" onclick="hire('+i+')">Hire</button></div>';
+ grid.appendChild(d);
+}
+function hire(i){ let f=fleet[i]; selName=f.name; selPrice=f.price; document.getElementById('calcRes').innerText='Price: π '+f.price+' - '+f.name; }
+function status(t){ document.getElementById('status').innerText=t; }
+function quote(){
+ let p=document.getElementById('pickupPoint').value;
+ let d=document.getElementById('dropPoint').value;
+ if(!selName){ alert('Tap Hire first'); return; }
+ if(!p||!d){ alert('Enter Pickup & Drop'); return; }
+ if(!user){ loginWithPi(); return; }
+ Pi.createPayment({amount:selPrice, memo:'REVEALED '+selName, metadata:{truck:selName, net:currentNet}},{
+  onReadyForServerApproval:function(id){ fetch('/api/complete',{method:'POST',body:JSON.stringify({paymentId:id})}); },
+  onReadyForServerCompletion:function(id,txid){ status('✅ PAID π '+selPrice+' TX:'+txid); },
+  onCancel:function(){ status('❌ Cancelled'); },
+  onError:function(e){ status('❌ '+e.message); }
+ });
+}
+</script>
+</body>
+</html>
