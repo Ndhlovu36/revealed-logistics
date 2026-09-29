@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>REVEALED v17.1 - UNFROZEN</title>
+<script src="https://sdk.minepi.com/pi-sdk.js"></script>
+<style>body{font-family:Arial;margin:0;background:#f0f2f5}header{background:#001a4d;color:#fff;padding:12px;text-align:center;position:sticky;top:0;z-index:99}
+.card{background:#fff;border-radius:12px;overflow:hidden;margin:10px;box-shadow:0 2px 8px rgba(0,0,0,.2)}.card img{width:100%;height:180px;object-fit:cover}
+.btn{width:100%;background:#001a4d;color:#fff;border:none;padding:12px;border-radius:8px;font-weight:bold;cursor:pointer}
+#calcBox{background:#001a4d;color:#fff;padding:14px;border-radius:10px;margin:10px 0;line-height:1.8}
+input{width:100%;padding:12px;margin:6px 0;border-radius:8px;border:2px solid #ccc;box-sizing:border-box;font-size:16px}
+.net button{padding:8px 14px;border-radius:20px;border:2px solid #ffcc00;background:transparent;color:#fff;font-weight:bold;margin:2px}
+.net button.active{background:#ffcc00;color:#001a4d}</style>
+</head><body>
+<header>
+<h2>REVEALED LOGISTICS</h2>
+<div id="piStatus" style="color:#ffcc00;font-weight:bold;padding:6px">Pi SDK Loading...</div>
+<div class="net">
+<button id="bMain" class="active" onclick="setNet('mainnet')">MAINNET</button>
+<button id="bTest" onclick="setNet('testnet')">TESTNET</button>
+<button onclick="loginPi()" style="background:#ffcc00;color:#000;padding:8px 16px;border-radius:20px;font-weight:bold;border:none">🔐 Login Pi</button>
+</div>
+</header>
+<div id="grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px;padding:10px"></div>
+
+<div style="background:#fff;margin:12px;padding:14px;border-radius:12px;border:2px solid #001a4d">
+<h3>Calculator - π0.2/100km LIVE</h3>
+<input id="pick" list="cl" placeholder="Pickup e.g Gqeberha"><input id="drop" list="cl" placeholder="Drop e.g Kimberley"><datalist id="cl"></datalist>
+<input id="date" type="date"><input id="puser" placeholder="Pi username">
+<div id="calcBox">Tap HIRE on any truck above</div>
+<button class="btn" style="background:#ff8c00;font-size:18px" onclick="payPi()">Pay with Pi - π0.2/100km</button>
+<div id="stat" style="font-weight:bold;margin-top:10px;min-height:40px"></div>
+<div style="margin-top:10px;font-size:13px">775km = π1.55 ✅ Correct!</div>
+</div>
+
+<footer style="background:#001a4d;color:#fff;text-align:center;padding:18px;margin-top:20px;font-size:13px;line-height:1.6">
+© 2026 Revealed Logistics<br>
+Reg No: [Add CIPC Here - I will insert for you]<br>
+South Africa | Pi Payments<br>
+<a href="/privacy.html" style="color:#ffcc00">Privacy</a> | <a href="/terms.html" style="color:#ffcc00">Terms</a>
+</footer>
+
+<script>
+let sel="", price=0.2, user=null, km=0, currentNet='mainnet';
+
+// FIXED - No freeze, checks window.Pi first
+function initPi(isTest){
+ try{
+  if(typeof Pi !== 'undefined'){
+    Pi.init({version:"2.0", sandbox: isTest});
+    document.getElementById('piStatus').innerText = "Pi Ready - "+(isTest?"TESTNET":"MAINNET")+" - Tap Login";
+    document.getElementById('piStatus').style.background = isTest?"#ff8c00":"#004400";
+    return true;
+  }else{
+    document.getElementById('piStatus').innerText = "Open in Pi Browser to Login";
+  }
+ }catch(e){
+  document.getElementById('piStatus').innerText = "Pi SDK - Refresh page";
+  console.error(e);
+ }
+ return false;
+}
+setTimeout(()=>initPi(false), 800);
+
+async function loginPi(){
+ document.getElementById('stat').innerText="Logging in...";
+ document.getElementById('piStatus').innerText="Logging in - "+currentNet+"...";
+ try{ 
+   if(typeof Pi !== 'undefined') Pi.init({version:"2.0", sandbox: currentNet==='testnet'}); 
+ }catch(e){}
+ try{
+  const auth = await Pi.authenticate(['username','payments'], function(p){ console.log("incomplete",p); });
+  user = auth.user;
+  document.getElementById('puser').value = user.username;
+  document.getElementById('piStatus').innerText = "✅ Welcome "+user.username+" - "+currentNet.toUpperCase();
+  document.getElementById('piStatus').style.background="#004400";
+  document.getElementById('stat').innerText="Login OK - Now pay";
+ }catch(e){
+  document.getElementById('stat').innerText="Login failed: "+e.message;
+  document.getElementById('piStatus').innerText="❌ "+e.message;
+  if(currentNet==='mainnet'){
+    document.getElementById('stat').innerText+=" - If you are Test user, tap TESTNET";
+  }else{
+    document.getElementById('stat').innerText+=" - If Mainnet user, tap MAINNET";
+  }
+ }
+}
+
+function setNet(n){
+ currentNet=n;
+ document.getElementById('bMain').className = n==='mainnet'?'active':'';
+ document.getElementById('bTest').className = n==='testnet'?'active':'';
+ document.getElementById('stat').innerText="Switched to "+n.toUpperCase()+" - Tap Login again";
+ user=null;
+ initPi(n==='testnet');
+}
+
+const cities={"gqeberha":[-33.96,25.60],"kimberley":[-28.72,24.74],"johannesburg":[-26.20,28.04],"bloemfontein":[-29.08,26.15],"cape town":[-33.92,18.42],"durban":[-29.85,31.02],"pretoria":[-25.74,28.22],"polokwane":[-23.90,29.46],"east london":[-33.01,27.91],"port elizabeth":[-33.96,25.60]};
+const dl=document.getElementById('cl'); Object.keys(cities).forEach(c=>{let o=document.createElement('option');o.value=c.charAt(0).toUpperCase()+c.slice(1);dl.appendChild(o);});
+function hav(a,b,c,d){const R=6371;const dLat=(c-a)*3.1415/180;const dLon=(d-b)*3.1415/180;const x=Math.sin(dLat/2)**2+Math.cos(a*3.1415/180)*Math.cos(c*3.1415/180)*Math.sin(dLon/2)**2;return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));}
+function calc(){const p=document.getElementById('pick').value.toLowerCase().trim();const d=document.getElementById('drop').value.toLowerCase().trim();const dt=document.getElementById('date').value;const box=document.getElementById('calcBox');
+ if(!sel){box.innerHTML="👆 Tap HIRE on any truck";return 0}
+ if(!p||!d){box.innerHTML=`Truck: <b>${sel}</b><br>Enter Pickup & Drop`;return 0}
+ let pk=cities[p]; let dk=cities[d]; if(!pk){for(let k in cities){if(p.includes(k)||k.includes(p))pk=cities[k]}} if(!dk){for(let k in cities){if(d.includes(k)||k.includes(d))dk=cities[k]}}
+ if(pk&&dk){km=Math.round(hav(pk[0],pk[1],dk[0],dk[1])*1.32)}else{km=400}
+ let tot=price*km/100; tot=parseFloat(tot.toFixed(4));
+ box.innerHTML=`Truck: <b>${sel}</b><br>Route: ${p} → ${d}<br>Distance: <b>${km} km</b><br>Rate: π0.2/100km<br><span style="font-size:26px;color:#ffcc00">TOTAL: π ${tot}</span><br>Collection: ${dt||'Select date'}<br><small>Fluctuates by km - LIVE</small>`;
+ return tot;
+}
+const fleet=[["Side Tippers","IMG-20260927-WA7926.jpg"],["Flat Decks","IMG-20260927-WA2466.jpg"],["Fuel Tanker","IMG-20260916-WA0687.jpg"],["Refrigerated","IMG-20260916-WA1910.jpg"],["Lowbed","IMG-20260916-WA2791.jpg"],["Flat Deck","
