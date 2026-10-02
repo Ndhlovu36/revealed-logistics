@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FORCE CLEAR</title>
+<script src="https://sdk.minepi.com/pi-sdk.js"></script>
+</head>
+<body style="font-family:Arial;padding:20px">
+<h1 style="color:red;text-align:center">CLEAR PENDING PAYMENT</h1>
+<button onclick="clearIt()" style="background:red;color:white;padding:25px;width:100%;font-size:24px;font-weight:bold;border-radius:15px;border:none">🔴 TAP TO CLEAR</button>
+<pre id="log" style="background:#eee;padding:15px;margin-top:20px;border:2px solid red;min-height:100px;white-space:pre-wrap">Ready. Open in Pi Browser and tap button.</pre>
+<script>
+async function clearIt(){
+ const log=document.getElementById('log');
+ try{
+  if(typeof Pi==='undefined'){log.innerText='Open in Pi Browser only!';return;}
+  Pi.init({version:"2.0",sandbox:false});
+  log.innerText='Authenticating...';
+  const onIncomplete=async(p)=>{
+   log.innerText='Found: '+p.identifier+'\nCancelling...';
+   const r=await fetch('/api/cancel',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentId:p.identifier})});
+   const j=await r.json();
+   log.innerText='Result:\n'+JSON.stringify(j,null,2)+'\n\nCLOSE Pi Browser now!';
+  };
+  await Pi.authenticate(['username','payments'],onIncomplete);
+  log.innerText='No pending! Close Pi Browser and reopen main site.';
+ }catch(e){log.innerText='Error: '+e.message;}
+}
+</script>
+</body>
+</html>
