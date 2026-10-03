@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>REVEALED v27.5 FINAL QTY</title>
+<script src="https://sdk.minepi.com/pi-sdk.js"></script>
+<style>
+body{font-family:Arial;margin:0;background:#f0f2f5}
+header{background:#001a4d;color:#fff;padding:12px;text-align:center;position:sticky;top:0;z-index:99}
+.card{background:#fff;border-radius:12px;overflow:hidden;margin:8px;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.card img{width:100%;height:170px;object-fit:cover;background:#001a4d}
+.btn{width:100%;background:#001a4d;color:#fff;border:none;padding:12px;border-radius:8px;font-weight:bold;cursor:pointer;margin-top:6px}
+#calcBox{background:#001a4d;color:#fff;padding:14px;border-radius:10px;margin:10px 0}
+input{width:100%;padding:12px;margin:6px 0;border-radius:8px;border:2px solid #ccc;box-sizing:border-box}
+.net button{padding:8px 14px;border-radius:20px;border:2px solid #ffcc00;background:transparent;color:#fff;font-weight:bold;margin:2px}
+.net button.active{background:#ffcc00;color:#001a4d}
+label{font-size:11px;font-weight:bold;color:#001a4d;margin-top:6px;display:block}
+.badge{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid #001a4d;border-radius:12px;padding:10px;margin:12px}
+</style></head><body>
+<header><h2>REVEALED LOGISTICS v27.5 QTY</h2>
+<div id="piStatus" style="color:#ffcc00;font-weight:bold;padding:6px">Loading...</div>
+<div class="net"><button id="bMain" class="active" onclick="window.setNet('mainnet')">MAINNET</button><button id="bTest" onclick="window.setNet('testnet')">TESTNET</button><button onclick="window.loginPi()" style="background:#ffcc00;color:#000;padding:8px 16px;border-radius:20px;font-weight:bold;border:none">Login Pi</button></div>
+<div style="padding:6px"><button onclick="window.clearPending()" style="background:#ff4444;color:#fff;padding:6px 12px;border-radius:8px;border:none;font-size:12px">🔴 Clear Pending</button></div>
+</header>
+<div class="badge"><div style="background:#001a4d;color:#ffcc00;width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:bold;border:3px solid #ffcc00">π</div><div><b>ALL AFRICA - v27.5 FINAL</b><br>Reg 2024/163979/07<br>📧 revealed.logistics@gmail.com<br><span style="font-size:11px;color:green">✅ Fleet + Qty + 160 Cities + Email</span></div></div>
+<div id="grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px;padding:8px"></div>
+<div style="background:#fff;margin:12px;padding:14px;border-radius:12px;border:2px solid #001a4d">
+<h3>Trip - 0.2 Pi /100km per truck</h3>
+<label>Client Full Name *</label><input id="clientName" placeholder="Thabo Ndhlovu">
+<label>Client Phone *</label><input id="clientPhone" placeholder="081 234 5678">
+<label>Client Email *</label><input id="clientEmail" type="email" placeholder="client@email.com">
+<label>Number of Trucks to Hire *</label>
+<div style="display:flex;align-items:center;gap:8px;margin:6px 0">
+<button type="button" onclick="window.changeQty(-1)" style="padding:10px 18px;font-size:22px;background:#001a4d;color:#fff;border:none;border-radius:8px;font-weight:bold">-</button>
+<input id="truckQty" type="number" min="1" max="20" value="1" style="text-align:center;font-weight:bold;font-size:18px;width:90px;margin:0" onchange="window.calc()" oninput="window.calc()">
+<button type="button" onclick="window.changeQty(1)" style="padding:10px 18px;font-size:22px;background:#001a4d;color:#fff;border:none;border-radius:8px;font-weight:bold">+</button>
+<span id="qtyLabel" style="font-weight:bold;color:#001a4d;margin-left:8px">1 Truck</span>
+</div>
+<label>Pickup City *</label><input id="pick" list="africaList" placeholder="Johannesburg">
+<label>Pickup Address *</label><input id="pickAddress">
+<label>Drop City *</label><input id="drop" list="africaList" placeholder="Durban">
+<label>Dropoff Address *</label><input id="dropAddress">
+<label>Date *</label><input id="date" type="date">
+<label>Pi Username</label><input id="puser">
+<datalist id="africaList"></datalist>
+<div id="calcBox">Tap HIRE - Select qty</div>
+<button class="btn" style="background:#ff8c00;font-size:18px" onclick="window.payPi()">Pay with Pi</button>
+<div id="stat" style="font-weight:bold;margin-top:10px;min-height:50px;color:#001a4d;background:#fff3cd;padding:10px;border-radius:8px">Ready v27.5 QTY</div>
+</div>
+<div style="background:#001a4d;color:#fff;padding:20px;text-align:center;margin-top:25px;border-radius:12px 12px 0 0">
+<b style="font-size:16px;color:#ffcc00">REVEALED LOGISTICS (Pty) Ltd</b><br>Reg No: 2024/163979/07<br><br>📧 <b>revealed.logistics@gmail.com</b><br><span style="font-size:13px">Send proof of payment (TXID + Qty + Pickup/Drop) to this email<br>We reply with driver details</span><br><br><span style="color:#ffcc00">Pan Africa - Pi Payments - 160 Cities</span><br><span style="font-size:11px">© 2026 REVEALED LOGISTICS | <a href="Legal.html" style="color:#ffcc00">Privacy & Terms</a></span>
+</div>
+<script>
+const fleet=["Side Tippers","Flat Decks","Fuel Tanker","Refrigerated","Lowbed","Flat Deck","Side Curtain","Tautliner","Van","Flat Bed"];
+const images=["IMG-20260927-WA7926.jpg","IMG-20260927-WA2466.jpg","IMG-20260916-WA0687.jpg","IMG-20260916-WA1910.jpg","IMG-20260916-WA2791.jpg","IMG-20260916-WA6953.jpg","IMG-20260916-WA7873.jpg","IMG-20260916-WA8594.jpg","IMG-20260916-WA9084.jpg","IMG-20260924-WA8680.jpg"];
+const g=document.getElementById('grid');
+fleet.forEach(function(name,i){
+ var card=document.createElement('div');card.className='card';
+ var img=document.createElement('img');img.src=images[i];img.alt=name;
+ img.onerror=function(){this.src='https://via.placeholder.com/400x180/001a4d/ffcc00?text='+encodeURIComponent(name);};
+ var info=document.createElement('div');info.style.padding='10px';
+ var b=document.createElement('b');b.innerText=name;
+ var btn=document.createElement('button');btn.className='btn';btn.innerText='Hire '+name;
+ btn.onclick=function(){window.hire(name);};
+ info.appendChild(b);info.appendChild(document.createElement('br'));info.appendChild(document.createTextNode('0.2 Pi/100km each'));info.appendChild(document.createElement('br'));info.appendChild(btn);
+ card.appendChild(img);card.appendChild(info);g.appendChild(card);
+});
+let sel="",price=0.2,user=null,km=0,currentNet=localStorage.getItem('net')||'mainnet';
+let lastPending=null;
+window.changeQty=function(d){var el=document.getElementById('truckQty');var v=parseInt(el.value)||1;v+=d;if(v<1)v=1;if(v>20)v=20;el.value=v;window.calc();};
+window.setNet=function(n){currentNet=n;localStorage.setItem('net',n);try{if(typeof Pi!=='undefined')Pi.init({version:"2.0",sandbox:n==='testnet'});}catch(e){}document.getElementById('bMain').className=n==='mainnet'?'active':'';document.getElementById('bTest').className=n==='testnet'?'active':'';document.getElementById('stat').innerText="Switched to "+n;user=null;};
+window.clearPending=async function(){const s=document.getElementById('stat');if(!lastPending){s.innerText='No pending';return;}try{if(lastPending.transaction&&lastPending.transaction.txid){await fetch('/api/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentId:lastPending.identifier,txid:lastPending.transaction.txid})});}else{await fetch('/api/cancel',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentId:lastPending.identifier})});}s.innerText='✅ Clear sent - CLOSE Pi Browser';}catch(e){s.innerText='Error '+e.message;}};
+window.loginPi=async function(){const s=document.getElementById('stat');if(typeof Pi==='undefined'){s.innerText='Pi Browser only';return;}s.innerText='Logging...';const onIncomplete=(p)=>{lastPending=p;};try{Pi.init({version:"2.0",sandbox:currentNet==='testnet'});const auth=await Pi.authenticate(['username','payments'],onIncomplete);user=auth.user;document.getElementById('puser').value=user.username;document.getElementById('piStatus').innerText="✅ "+user.username;s.innerText="✅ "+user.username;}catch(e){s.innerText="Login error: "+e.message;}};
+const cities={"polokwane":[-23.9045,29.4689],"giyani":[-23.31,30.68],"thohoyandou":[-22.94,30.48],"musina":[-22.34,30.04],"mokopane":[-24.19,29.0],"tzaneen":[-23.83,30.16],"louis trichardt":[-23.04,29.9],"makhado":[-23.04,29.9],"bela-bela":[-24.88,28.29],"lephalale":[-23.66,27.74],"phalaborwa":[-23.94,31.14],"lebowakgomo":[-24.31,29.56],"burgersfort":[-24.67,30.32],"groblersdal":[-25.17,29.4],"modimolle":[-24.7,28.4],"thabazimbi":[-24.59,27.41],"johannesburg":[-26.2041,28.0473],"pretoria":[-25.7479,28.2293],"meyerton":[-26.55,28.01],"soweto":[-26.26,27.85],"centurion":[-25.86,28.18],"midrand":[-25.99,28.12],"sandton":[-26.1,28.05],"randburg":[-26.09,27.98],"roodepoort":[-26.16,27.86],"kempton park":[-26.1,28.23],"benoni":[-26.18,28.32],"boksburg":[-26.21,28.25],"vereeniging":[-26.67,27.92],"vanderbijlpark":[-26.71,27.84],"krugersdorp":[-26.1,27.78],"durban":[-29.85,31.02],"pietermaritzburg":[-29.6,30.38],"newcastle":[-27.76,29.93],"richards bay":[-28.78,32.03],"ladysmith":[-28.55,29.78],"dundee":[-28.16,30.23],"port shepstone":[-30.74,30.45],"stanger":[-29.34,31.2],"empangeni":[-28.77,31.89],"hluhluwe":[-28.02,32.27],"vryheid":[-27.77,30.79],"ulundi":[-28.33,31.41],"cape town":[-33.92,18.42],"stellenbosch":[-33.93,18.86],"paarl":[-33.72,18.96],"george":[-33.96,22.46],"mossel bay":[-34.18,22.13],"oudtshoorn":[-33.59,22.2],"worcester":[-33.64,19.44],"knysna":[-34.03,23.04],"beaufort west":[-32.35,22.58],"saldanha":[-33.01,18.02],"port elizabeth":[-33.96,25.6],"gqeberha":[-33.96,25.6],"east london":[-33.01,27.91],"mthatha":[-31.58,28.78],"grahamstown":[-33.3,26.52],"queenstown":[-31.89,26.87],"uitenhage":[-33.76,25.39],"bhisho":[-32.85,27.44],"butterworth":[-32.33,28.14],"king williams town":[-32.88,27.39],"port alfred":[-33.59,26.89],"nelspruit":[-25.47,30.96],"witbank":[-25.87,29.23],"secunda":[-26.51,29.18],"standerton":[-26.93,29.24],"ermelo":[-26.53,29.98],"middelburg":[-25.77,29.46],"lydenburg":[-25.09,30.45],"barberton":[-25.78,31.05],"bloemfontein":[-29.08,26.15],"welkom":[-27.98,26.73],"bethlehem":[-28.17,28.3],"sasolburg":[-26.81,27.81],"kroonstad":[-27.65,27.23],"phuthaditjhaba":[-28.51,28.81],"parys":[-26.9,27.45],"rustenburg":[-25.66,27.24],"mahikeng":[-25.86,25.64],"klerksdorp":[-26.85,26.66],"potchefstroom":[-26.71,27.09],"brits":[-25.63,27.78],"vryburg":[-26.95,24.73],"lichtenburg":[-26.15,26.16],"kimberley":[-28.72,24.74],"upington":[-28.45,21.25],"springbok":[-29.66,17.88],"de aar":[-30.65,24.01],"kuruman":[-27.45,23.43],"kathu":[-27.7,23.05],"postmasburg":[-28.32,23.07],"luanda":[-8.83,13.28],"gaborone":[-24.62,25.92],"windhoek":[-22.56,17.06],"harare":[-17.82,31.05],"lusaka":[-15.4,28.28],"maputo":[-25.96,32.57],"maseru":[-29.31,27.48],"nairobi":[-1.29,36.82],"lagos":[6.52,3.37],"accra":[5.6,-0.18],"cairo":[30.04,31.23]};
+function hav(a,b,c,d){var R=6371;var dLat=(c-a)*Math.PI/180;var dLon=(d-b)*Math.PI/180;var x=Math.sin(dLat/2)**2+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(dLon/2)**2;return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));}
+function findCity(n){n=n.toLowerCase().trim();if(cities[n])return cities[n];for(var k in cities){if(n.includes(k)||k.includes(n))return cities[k];}return null;}
+window.calc=function(){try{var qty=parseInt(document.getElementById('truckQty').value)||1;if(qty<1)qty=1;if(qty>20)qty=20;document.getElementById('qtyLabel').innerText=qty+(qty==1?" Truck":" Trucks");var p=document.getElementById('pick').value.toLowerCase().trim();var d=document.getElementById('drop').value.toLowerCase().trim();var box=document.getElementById('calcBox');if(!sel){box.innerHTML="Tap HIRE first - "+qty+" truck(s) selected";return 0}if(!p||!d){box.innerHTML="Truck: <b>"+sel+"</b> x"+qty+"<br>Enter Pickup & Drop";return 0}var pk=findCity(p);var dk=findCity(d);if(pk&&dk){km=Math.round(hav(pk[0],pk[1],dk[0],dk[1])*1.32);if(km<30)km=30;}else{km=0;box.innerHTML="❌ City not found";return 0;}var single=price*km/100;var tot=single*qty;single=parseFloat(single.toFixed(4));tot=parseFloat(tot.toFixed(4));box.innerHTML="Truck: <b>"+sel+"</b> x<b>"+qty+"</b><br>"+p+" -> "+d+"<br>Distance: <b>"+km+" km</b><br>Single: Pi "+single+"<br><span style='font-size:22px;color:#ffcc00'>TOTAL ("+qty+" trucks): Pi "+tot+"</span><br>Email proof to: revealed.logistics@gmail.com";return tot;}catch(e){return 0;}};
+try{var dl=document.getElementById('africaList');Object.keys(cities).sort().forEach(function(c){var o=document.createElement('option');o.value=c.charAt(0).toUpperCase()+c.slice(1);dl.appendChild(o);});}catch(e){}
+window.hire=function(n){sel=n;localStorage.setItem('sel',n);document.getElementById('stat').innerText="✅ Selected "+n+" x"+(document.getElementById('truckQty').value||1);window.calc();document.getElementById('calcBox').scrollIntoView({behavior:'smooth'});};
+["clientName","clientPhone","clientEmail","pick","pickAddress","drop","dropAddress","date","puser","truckQty"].forEach(function(id){var el=document.getElementById(id);if(!el)return;var v=localStorage.getItem(id);if(v)el.value=v;el.addEventListener('input',function(e){localStorage.setItem(id,e.target.value);if(id=='pick'||id=='drop'||id=='truckQty')window.calc();});});
+window.payPi=async function(){
+ var cn=document.getElementById('clientName').value.trim();var cp=document.getElementById('clientPhone').value.trim();var ce=document.getElementById('clientEmail').value.trim();var qty=parseInt(document.getElementById('truckQty').value)||1;var pickup=document.getElementById('pick').value.trim();var pickAddr=document.getElementById('pickAddress').value.trim();var drop=document.getElementById('drop').value.trim();var dropAddr=document.getElementById('dropAddress').value.trim();var date=document.getElementById('date').value;
+ if(!sel){alert('Tap Hire first');return}if(!cn||!cp||!ce){alert('Enter Client details');return}if(!pickup||!pickAddr||!drop||!dropAddr||!date){alert('Fill all fields');return}if(qty<1||qty>20){alert('Qty 1-20');return}if(typeof Pi==='undefined'||!user){await window.loginPi();if(!user)return}
+ var tot=window.calc();if(tot==0){alert('City not found');return}document.getElementById('stat').innerText="Paying Pi "+tot+" for "+qty+" trucks...";
+ try{await Pi.createPayment({amount:tot,memo:("REVEALED "+qty+"x"+sel+" "+pickup+"->"+drop).substring(0,28),metadata:{clientName:cn,clientPhone:cp,clientEmail:ce,truckQty:qty,pickupCity:pickup,pickupAddress:pickAddr,dropCity:drop,dropAddress:dropAddr,date:date,truck:sel,distance:km,network:currentNet,companyEmail:"revealed.logistics@gmail.com",reg:"2024/163979/07"}},{
+  onReadyForServerApproval:function(id){fetch('/api/approve',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentId:id})});},
+  onReadyForServerCompletion:function(id,txid){
+    document.getElementById('stat').innerHTML="PAID ✅ Pi "+tot+" for "+qty+"x "+sel+"<br>TXID: "+txid+"<br><br>📧 Send proof to: <b>revealed.logistics@gmail.com</b><br>Qty: "+qty+" trucks<br>We will email driver details to: "+ce;
+    fetch('/api/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentId:id,txid:txid,clientEmail:ce,qty:qty})});
+    setTimeout(function(){var subject=encodeURIComponent("Proof - "+qty+"x"+sel+" "+pickup+"->"+drop+" TX:"+txid);var body=encodeURIComponent("Hello REVEALED LOGISTICS,%0A%0APaid Pi "+tot+" for "+qty+" x "+sel+"%0APickup: "+pickup+", "+pickAddr+"%0ADrop: "+drop+", "+dropAddr+"%0ADate: "+date+"%0ATXID: "+txid+"%0AClient: "+cn+" / "+cp+"%0AQty: "+qty+" trucks%0A%0AThanks!"); window.location.href="mailto:revealed.logistics@gmail.com?subject="+subject+"&body="+body; },1500);
+  },
+  onCancel:function(){document.getElementById('stat').innerText="Cancelled";},
+  onError:function(e){document.getElementById('stat').innerText="Error "+e.message;}
+ });}catch(e){document.getElementById('stat').innerText="Error "+e.message;}
+};
+setTimeout(()=>{try{Pi.init({version:"2.0",sandbox:currentNet==='testnet'});document.getElementById('piStatus').innerText="✅ Pi Ready";}catch(e){}},800);
+</script></body></html>
