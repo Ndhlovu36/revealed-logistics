@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>REVEALED v26.1 - Fixed</title>
+<script src="https://sdk.minepi.com/pi-sdk.js"></script>
+<style>
+body{font-family:Arial;margin:0;background:#f0f2f5}
+header{background:#001a4d;color:#fff;padding:12px;text-align:center;position:sticky;top:0;z-index:99}
+.card{background:#fff;border-radius:12px;overflow:hidden;margin:8px;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.card img{width:100%;height:170px;object-fit:cover;background:#001a4d}
+.btn{width:100%;background:#001a4d;color:#fff;border:none;padding:12px;border-radius:8px;font-weight:bold;cursor:pointer}
+#calcBox{background:#001a4d;color:#fff;padding:14px;border-radius:10px;margin:10px 0}
+input{width:100%;padding:12px;margin:6px 0;border-radius:8px;border:2px solid #ccc;box-sizing:border-box}
+.net button{padding:8px 14px;border-radius:20px;border:2px solid #ffcc00;background:transparent;color:#fff;font-weight:bold;margin:2px}
+.net button.active{background:#ffcc00;color:#001a4d}
+label{font-size:11px;font-weight:bold;color:#001a4d;margin-top:6px;display:block}
+.badge{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid #001a4d;border-radius:12px;padding:10px;margin:12px}
+</style></head><body>
+<header><h2>REVEALED LOGISTICS - PAN AFRICA</h2>
+<div id="piStatus" style="color:#ffcc00;font-weight:bold;padding:6px">Loading Pi...</div>
+<div class="net"><button id="bMain" class="active" onclick="setNet('mainnet')">MAINNET</button><button id="bTest" onclick="setNet('testnet')">TESTNET</button><button onclick="loginPi()" style="background:#ffcc00;color:#000;padding:8px 16px;border-radius:20px;font-weight:bold;border:none">Login Pi</button></div>
+</header>
+<div class="badge"><div style="background:#001a4d;color:#ffcc00;width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:bold;border:3px solid #ffcc00">π</div><div><b style="color:#001a4d">PAN AFRICA 54 COUNTRIES - FIXED</b><br><span style="font-size:12px">Pi Network • Open Standard Partner</span><br><span style="font-size:10px">Reg 2024/163979/07</span><br><span style="font-size:10px;color:green">✅ v26.1 - Fleet Fixed</span></div></div>
+<div id="grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px;padding:8px"></div>
+<div style="background:#fff;margin:12px;padding:14px;border-radius:12px;border:2px solid #001a4d">
+<h3>Client & Trip Details - 0.2 Pi /100km</h3>
+<label>Client Full Name *</label><input id="clientName" placeholder="Thabo Ndhlovu">
+<label>Client Phone *</label><input id="clientPhone" placeholder="081 234 5678">
+<label>Client Email *</label><input id="clientEmail" type="email" placeholder="client@email.com">
+<label>Pickup City *</label><input id="pick" list="africaList" placeholder="Johannesburg, Nairobi, Lagos...">
+<label>Pickup PHYSICAL Address *</label><input id="pickAddress" placeholder="45 Green St">
+<label>Drop City *</label><input id="drop" list="africaList" placeholder="Cairo, Accra, Kigali...">
+<label>Dropoff PHYSICAL Address *</label><input id="dropAddress" placeholder="12 Diamond Ave">
+<label>Transport Date *</label><input id="date" type="date">
+<label>Pi Username (auto)</label><input id="puser" placeholder="Pi username">
+<datalist id="africaList"></datalist>
+<div id="calcBox">Tap HIRE on truck - All Africa Enabled</div>
+<button class="btn" style="background:#ff8c00;font-size:18px" onclick="payPi()">Pay with Pi - Pan Africa</button>
+<div id="stat" style="font-weight:bold;margin-top:10px;min-height:30px;color:#001a4d"></div>
+</div>
+<script>
+let sel=localStorage.getItem('sel')||"",price=0.2,user=null,km=0,currentNet=localStorage.getItem('net')||'mainnet';
+function initPi(isTest){
+ try{
+  if(typeof Pi==='undefined'){document.getElementById('piStatus').innerText='Open in Pi Browser';return false;}
+  Pi.init({version:"2.0",sandbox:isTest});
+  document.getElementById('piStatus').innerText="Pi Ready - "+(isTest?"TESTNET":"MAINNET");
+  document.getElementById('piStatus').style.background=isTest?"#ff8c00":"#004400";
+  return true;
+ }catch(e){return false;}
+}
+setTimeout(()=>initPi(currentNet==='testnet'),600);
+async function loginPi(){
+ const s=document.getElementById('stat');
+ if(typeof Pi==='undefined'){s.innerText='Open in Pi Browser App';return;}
+ s.innerText='Checking pending...';
+ const onIncomplete=(payment)=>{
+  s.innerText='Found pending '+payment.identifier.slice(0,8)+'... clearing';
+  if(payment.transaction && payment.transaction.txid){
+    fetch('/api/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentId:payment.identifier,txid:payment.transaction.txid})}).then(()=>{s.innerText='Completed old tx - CLOSE Pi Browser and Login again';});
+  }else{
+    fetch('/api/cancel',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentId:payment.identifier})}).then(()=>{s.innerText='Cancelled old pending - CLOSE Pi Browser and Login again';});
+  }
+ };
+ try{
+  const auth=await Pi.authenticate(['username','payments'],onIncomplete);
+  user=auth.user;
+  document.getElementById('puser').value=user.username;
+  document.getElementById('piStatus').innerText="OK "+user.username;
+  document.getElementById('piStatus').style.background="#004400";
+  s.innerText="Login OK "+user.username;
+ }catch(e){s.innerText="Login: "+e.message;}
+}
+function setNet(n){currentNet=n;localStorage.setItem('net',n);initPi(n==='testnet');document.getElementById('bMain').className=n==='mainnet'?'active':'';document.getElementById('bTest').className=n==='testnet'?'active':'';document.getElementById('stat').innerText="Switched to "+n+" - Login again";user=null;}
+const cities={"johannesburg":[-26.2041,28.0473],"sandton":[-26.1065,28.0567],"soweto":[-26.2678,27.8585],"midrand":[-25.9915,28.1265],"centurion":[-25.8608,28.1891],"pretoria":[-25.7479,28.2293],"tswane":[-25.7479,28.2293],"cape town":[-33.9249,18.4241],"durban":[-29.8587,31.0218],"gqeberha":[-33.9608,25.6022],"port elizabeth":[-33.9608,25.6022],"east london":[-33.0153,27.9116],"bloemfontein":[-29.0852,26.1596],"kimberley":[-28.7282,24.7499],"polokwane":[-23.9045,29.4689],"nelspruit":[-25.4753,30.9694],"mbombela":[-25.4753,30.9694],"rustenburg":[-25.6677,27.2419],"mahikeng":[-25.8605,25.6406],"potchefstroom":[-26.7135,27.1013],"klerksdorp":[-26.8523,26.6665],"vereeniging":[-26.6731,27.9261],"upington":[-28.4478,21.2561],"mthatha":[-31.5889,28.7844],"nairobi":[-1.2921,36.8219],"mombasa":[-4.0435,39.6682],"kisumu":[-0.0917,34.768],"nakuru":[-0.3031,36.08],"kampala":[0.3476,32.5825],"entebbe":[0.0645,32.4467],"jinja":[0.4244,33.2041],"kigali":[-1.9706,30.1044],"bujumbura":[-3.3614,29.3593],"dar es salaam":[-6.7924,39.2083],"arusha":[-3.3869,36.6829],"dodoma":[-6.1722,35.7395],"mwanza":[-2.5164,32.9175],"zanzibar":[-6.1659,39.2026],"addis ababa":[9.03,38.74],"dire dawa":[9.6,41.8667],"djibouti":[11.5721,43.1456],"asmara":[15.3229,38.9251],"mogadishu":[2.0469,45.3182],"hargeisa":[9.5624,44.077],"lagos":[6.5244,3.3792],"abuja":[9.0765,7.3986],"kano":[12.0022,8.592],"ibadan":[7.3775,3.947],"port harcourt":[4.8156,7.0498],"accra":[5.6037,-0.187],"kumasi":[6.6885,-1.6244],"abidjan":[5.36,-4.0083],"yamoussoukro":[6.8276,-5.2893],"dakar":[14.7167,-17.4677],"bamako":[12.6392,-8.0029],"ouagadougou":[12.3714,-1.5197],"conakry":[9.6412,-13.5784],"freetown":[8.4657,-13.2317],"monrovia":[6.3005,-10.7969],"lome":[6.1725,1.2314],"cotonou":[6.3703,2.3912],"porto novo":[6.4965,2.6036],"niamey":[13.5116,2.1254],"nouakchott":[18.0735,-15.9582],"banjul":[13.4549,-16.579],"bissau":[11.8636,-15.5977],"praia":[14.9331,-23.5133],"kinshasa":[-4.4419,15.2663],"lubumbashi":[-11.6647,27.4793],"brazzaville":[-4.2634,15.2429],"yaounde":[3.848,11.5021],"douala":[4.0511,9.7679],"libreville":[0.4162,9.4673],"malabo":[3.75,8.7833],"bangui":[4.3947,18.5582],"ndjamena":[12.1348,15.0557],"luanda":[-8.839,13.2894],"benguela":[-12.5763,13.4055],"cairo":[30.0444,31.2357],"alexandria":[31.2001,29.9187],"casablanca":[33.5898,-7.6039],"marrakech":[31.6295,-7.9811],"rabat":[34.0209,-6.8416],"tunis":[36.8065,10.1815],"algiers":[36.7525,3.042],"tripoli":[32.8872,13.1913],"khartoum":[15.5007,32.5599],"gaborone":[-24.6282,25.9231],"francistown":[-21.17,27.5079],"windhoek":[-22.5609,17.0658],"walvis bay":[-22.9576,14.5051],"maseru":[-29.3158,27.4869],"mbabane":[-26.3054,31.1367],"manzini":[-26.4989,31.38],"harare":[-17.8292,31.052],"bulawayo":[-20.1486,28.5903],"lusaka":[-15.4067,28.2871],"ndola":[-12.9585,28.6366],"livingstone":[-17.8519,25.8285],"maputo":[-25.9692,32.5732],"beira":[-19.7967,34.8638],"matola":[-25.9655,32.4568],"lilongwe":[-13.9631,33.7741],"blantyre":[-15.7667,35.0167],"antananarivo":[-18.8792,47.5079],"port louis":[-20.1609,57.5012],"victoria":[-4.6191,55.4513],"moroni":[-11.7022,43.2551]};
+function hav(a,b,c,d){var R=6371;var dLat=(c-a)*Math.PI/180;var dLon=(d-b)*Math.PI/180;var x=Math.sin(dLat/2)**2+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(dLon/2)**2;return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));}
+function findCity(n){n=n.toLowerCase().trim();if(cities[n])return cities[n];for(var k in cities){if(n.includes(k)||k.includes(n))return cities[k];}return null;}
+function calc(){var p=document.getElementById('pick').value.toLowerCase().trim();var d=document.getElementById('drop').value.toLowerCase().trim();var dt=document.getElementById('date').value;var box=document.getElementById('calcBox');if(!sel){box.innerHTML="Tap HIRE first";return 0}if(!p||!d){box.innerHTML="Truck: <b>"+sel+"</b><br>Enter Pickup & Drop City (Any Africa)";return 0}var pk=findCity(p);var dk=findCity(d);if(pk&&dk){km=Math.round(hav(pk[0],pk[1],dk[0],dk[1])*1.32);if(km<30)km=30;}else{km=380+Math.round(Math.random()*120);}var tot=price*km/100;tot=parseFloat(tot.toFixed(4));box.innerHTML="Truck: <b>"+sel+"</b><br>Route: "+p+" -> "+d+"<br>Distance: <b>"+km+" km</b><br><span style='font-size:22px;color:#ffcc00'>TOTAL: Pi "+tot+"</span><br>Date: "+(dt||'Select');return tot;}
+var dl=document.getElementById('africaList');Object.keys(cities).sort().forEach(function(c){var o=document.createElement('option');o.value=c.charAt(0).toUpperCase()+c.slice(1);dl.appendChild(o);});
+const fleet=["Side Tippers","Flat Decks","Fuel Tanker","Refrigerated","Lowbed","Flat Deck","Side Curtain","Tautliner","Van","Flat Bed"];
+const images=["IMG-20260927-WA7926.jpg","IMG-20260927-WA2466.jpg","IMG-20260916-WA0687.jpg","IMG-20260916-WA1910.jpg","IMG-20260916-WA2791.jpg","IMG-20260916-WA6953.jpg","IMG-20260916-WA7873.jpg","IMG-20260916-WA8594.jpg","IMG-20260916-WA9084.jpg","IMG-20260924-WA8680.jpg"];
+const g=document.getElementById('grid');
+fleet.forEach(function(name,i){
+ var card=document.createElement('div');card.className='card';
+ var img=document.createElement('img');img.src=images[i]+"?v=26";img.alt=name;
+ img.onerror=function(){this.src='https://via.placeholder.com/400x180/001a4d/ffcc00?text='+encodeURIComponent(name);};
+ var info=document.createElement('div');info.style.padding='10px';
+ var b=document.createElement('b');b.innerText=name;
+ var br=document.createElement('br');
+ var txt=document.createTextNode('0.2 Pi/100km Pan Africa');
+ var btn=document.createElement('button');btn.className='btn';btn.innerText='Hire '+name;
+ btn.onclick=function(){hire(name);};
+ info.appendChild(b);info.appendChild(br);info.appendChild(txt);info.appendChild(document.createElement('br'));info.appendChild(btn);
+ card.appendChild(img);card.appendChild(info);
+ g.appendChild(card);
+});
+function hire(n){sel=n;localStorage.setItem('sel',n);document.getElementById('stat').innerText="Selected "+n;calc();window.scrollTo(0,document.body.scrollHeight);}
+["clientName","clientPhone","clientEmail","pick","pickAddress","drop","dropAddress","date"].forEach(function(id){
+ var v=localStorage.getItem(id);if(v){var el=document.getElementById(id);if(el)el.value=v;}
+ var el=document.getElementById(id);if(el)el.addEventListener('input',function(e){localStorage.setItem(id,e.target.value);if(id=='pick'||id=='drop'||id=='date')calc();});
+});
+var dateEl=document.getElementById('date');if(dateEl)dateEl.addEventListener('change',function(e){localStorage.setItem('date',e.target.value);calc();});
+async function payPi(){
+ var cn=document.getElementById('clientName').value.trim();
+ var cp=document.getElementById('clientPhone').value.trim();
+ var ce=document.getElementById('clientEmail').value.trim();
+ var pickup=document.getElementById('pick').value.trim();
+ var pickAddr=document.getElementById('pickAddress').value.trim();
+ var drop=document.getElementById('drop').value.trim();
+ var dropAddr=document.getElementById('dropAddress').value.trim();
+ var date=document.getElementById('date').value;
+ if(!sel){alert('Tap Hire first');return}
+ if(!cn||!cp||!ce){alert('Enter Client details');return}
+ if(!pickup||!pickAddr||!drop||!dropAddr||!date){alert('Fill all fields');return}
+ if(!user){alert('Login Pi first');await loginPi();if(!user)return}
+ var tot=calc();
+ document.getElementById('stat').innerText="Creating payment Pi "+tot+"...";
+ try{
+  await Pi.createPayment({amount:tot,memo:("REVEALED "+sel+" "+pickup+"->"+drop).substring(0,28),metadata:{clientName:cn,clientPhone:cp,clientEmail:ce,pickupCity:pickup,pickupAddress:pickAddr,dropCity:drop,dropAddress:dropAddr,date:date,truck:sel,distance:km,network:currentNet,companyEmail:"revealed.logistics@gmail.com",reg:"2024/163979/07",panAfrica:true}},{
+   onReadyForServerApproval:function(id){document.getElementById('stat').innerText="Approving "+id+"...";fetch('/api/approve',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentId:id})}).then(r=>r.json()).then(()=>{document.getElementById('stat').innerText="Approved - Check wallet";});},
+   onReadyForServerCompletion:function(id,txid){document.getElementById('stat').innerText="PAID OK Pi "+tot+" TX:"+txid;fetch('/api/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentId:id,txid:txid,clientEmail:ce,clientName:cn,pickupAddress:pickAddr,dropAddress:dropAddr})});},
+   onCancel:function(){document.getElementById('stat').innerText="Cancelled";},
+   onError:function(e){document.getElementById('stat').innerText="Error "+e.message;}
+  });
+ }catch(e){document.getElementById('stat').innerText="Error "+e.message;}
+}
+</script></body></html>
