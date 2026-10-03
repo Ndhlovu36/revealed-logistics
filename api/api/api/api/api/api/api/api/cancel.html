@@ -1,0 +1,24 @@
+<!DOCTYPE html><html><body style="font-family:Arial;padding:20px">
+<h2>Force Cancel Pending Payment</h2>
+<p>Payment ID: Y23NYIYRs37d...</p>
+<p>Enter your PI_API_KEY from develop.pi:</p>
+<input id="key" style="width:100%;padding:10px" placeholder="Paste PI_API_KEY here">
+<br><br>
+<button onclick="doCancel()" style="background:red;color:#fff;padding:15px;border:none;border-radius:8px;font-weight:bold;width:100%">CANCEL PAYMENT NOW</button>
+<div id="res" style="margin-top:20px;padding:10px;background:#eee"></div>
+<script>
+async function doCancel(){
+  const k=document.getElementById('key').value.trim();
+  const id='Y23NYIYRs37d'; // your stuck ID - full ID from logs is needed, check Vercel logs for full ID
+  document.getElementById('res').innerText='Cancelling...';
+  try{
+    const r=await fetch('https://api.minepi.com/v2/payments/'+id+'/cancel',{
+      method:'POST',
+      headers:{'Authorization':'Key '+k}
+    });
+    const d=await r.json();
+    document.getElementById('res').innerText=JSON.stringify(d,null,2);
+  }catch(e){ document.getElementById('res').innerText='Error '+e.message; }
+}
+</script>
+</body></html>
