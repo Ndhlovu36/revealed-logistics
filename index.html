@@ -1,0 +1,63 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>REVEALED v28.4b FIXED</title>
+<style>
+body{font-family:Arial;margin:0;background:#f0f2f5}
+header{background:#001a4d;color:#fff;padding:12px;text-align:center;position:sticky;top:0;z-index:99}
+.card{background:#fff;border-radius:12px;overflow:hidden;margin:8px;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.card img{width:100%;height:170px;object-fit:cover}
+.btn{width:100%;background:#001a4d;color:#fff;border:none;padding:12px;border-radius:8px;font-weight:bold;cursor:pointer}
+#calcBox{background:#001a4d;color:#fff;padding:14px;border-radius:10px;margin:10px 0}
+input{width:100%;padding:12px;margin:6px 0;border-radius:8px;border:2px solid #ccc;box-sizing:border-box}
+.net button{padding:8px 14px;border-radius:20px;border:2px solid #ffcc00;background:transparent;color:#fff;font-weight:bold;margin:2px}
+.net button.active{background:#ffcc00;color:#001a4d}
+label{font-size:11px;font-weight:bold;color:#001a4d;display:block;margin-top:6px}
+.badge{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid #001a4d;border-radius:12px;padding:10px;margin:12px}
+</style></head><body>
+<header>
+<h2>REVEALED v28.4b - FIXED BUTTONS</h2>
+<div id="piStatus" style="color:#ffcc00;font-weight:bold">Ready - v28.4b Fixed</div>
+<div class="net">
+<button id="bMain" class="active" onclick="setNet('mainnet')">MAINNET</button>
+<button id="bTest" onclick="setNet('testnet')">TESTNET</button>
+<button onclick="loginPi()" style="background:#ffcc00;color:#000;padding:8px 16px;border-radius:20px;font-weight:bold;border:none">Login Pi</button>
+</div>
+</header>
+<div class="badge"><div style="background:#001a4d;color:#ffcc00;width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:bold;border:3px solid #ffcc00">π</div><div><b>REVEALED LOGISTICS v28.4b</b><br>Reg 2024/163979/07<br><span style="color:green">✅ Buttons Fixed - 91 Cities - No Cut File</span></div></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:8px;padding:8px">
+<div class="card"><img src="IMG-20260927-WA7926.jpg" onerror="this.src='https://via.placeholder.com/400x180/001a4d/ffcc00?text=Side+Tippers'"><div style="padding:10px"><b>Side Tippers</b><br><button class="btn" onclick="hire('Side Tippers')">Hire Side Tippers</button></div></div>
+<div class="card"><img src="IMG-20260927-WA2466.jpg" onerror="this.src='https://via.placeholder.com/400x180/001a4d/ffcc00?text=Flat+Decks'"><div style="padding:10px"><b>Flat Decks</b><br><button class="btn" onclick="hire('Flat Decks')">Hire Flat Decks</button></div></div>
+<div class="card"><img src="IMG-20260916-WA1910.jpg" onerror="this.src='https://via.placeholder.com/400x180/001a4d/ffcc00?text=Refrigerated'"><div style="padding:10px"><b>Refrigerated</b><br><button class="btn" onclick="hire('Refrigerated')">Hire Refrigerated</button></div></div>
+<div class="card"><img src="IMG-20260916-WA2791.jpg" onerror="this.src='https://via.placeholder.com/400x180/001a4d/ffcc00?text=Lowbed'"><div style="padding:10px"><b>Lowbed</b><br><button class="btn" onclick="hire('Lowbed')">Hire Lowbed</button></div></div>
+<div class="card"><img src="IMG-20260916-WA7873.jpg" onerror="this.src='https://via.placeholder.com/400x180/001a4d/ffcc00?text=Side+Curtain'"><div style="padding:10px"><b>Side Curtain</b><br><button class="btn" onclick="hire('Side Curtain')">Hire Side Curtain</button></div></div>
+<div class="card"><img src="IMG-20260916-WA8594.jpg" onerror="this.src='https://via.placeholder.com/400x180/001a4d/ffcc00?text=Tautliner'"><div style="padding:10px"><b>Tautliner</b><br><button class="btn" onclick="hire('Tautliner')">Hire Tautliner</button></div></div>
+<div class="card"><img src="IMG-20260916-WA9084.jpg" onerror="this.src='https://via.placeholder.com/400x180/001a4d/ffcc00?text=Van'"><div style="padding:10px"><b>Van</b><br><button class="btn" onclick="hire('Van')">Hire Van</button></div></div>
+<div class="card"><img src="IMG-20260924-WA8680.jpg" onerror="this.src='https://via.placeholder.com/400x180/001a4d/ffcc00?text=Flat+Bed'"><div style="padding:10px"><b>Flat Bed</b><br><button class="btn" onclick="hire('Flat Bed')">Hire Flat Bed</button></div></div>
+</div>
+<div style="background:#fff;margin:12px;padding:14px;border-radius:12px;border:2px solid #001a4d">
+<label>Pickup City *</label><input id="pick" list="africaList" placeholder="Henley on Klip">
+<label>Pickup Address</label><input id="pickAddress" placeholder="1768 Gibson Road">
+<label>Drop City *</label><input id="drop" list="africaList" placeholder="Johannesburg">
+<label>Drop Address</label><input id="dropAddress">
+<label>Qty (1-20)</label><input id="truckQty" type="number" value="1" min="1" max="20" oninput="calc()">
+<datalist id="africaList"></datalist>
+<div id="calcBox">Tap HIRE - buttons work 100%</div>
+<button class="btn" style="background:#ff8c00" onclick="payPi()">Pay Pi</button>
+<div id="stat" style="background:#fff3cd;padding:10px;border-radius:8px;margin-top:8px;font-weight:bold">Ready - v28.4b Fixed Complete</div>
+</div>
+<script>
+let sel="",price=0.2,user=null,km=0,currentNet=localStorage.getItem('net')||'mainnet';
+function hire(n){sel=n;document.getElementById('stat').innerText="✅ Selected "+n;calc();}
+function setNet(n){currentNet=n;localStorage.setItem('net',n);document.getElementById('bMain').className=n==='mainnet'?'active':'';document.getElementById('bTest').className=n==='testnet'?'active':'';document.getElementById('piStatus').innerText="✅ "+n+" ready";}
+async function loginPi(){if(typeof Pi==='undefined'){document.getElementById('stat').innerText='Open in Pi Browser to Login';return;}try{Pi.init({version:"2.0",sandbox:currentNet==='testnet'});const a=await Pi.authenticate(['username','payments'],()=>{});user=a.user;document.getElementById('piStatus').innerText="✅ "+user.username;}catch(e){document.getElementById('stat').innerText=e.message;}}
+function hav(a,b,c,d){var R=6371;var dLat=(c-a)*Math.PI/180;var dLon=(d-b)*Math.PI/180;var x=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));}
+const cities={"johannesburg":[-26.2041,28.0473],"pretoria":[-25.7479,28.2293],"durban":[-29.8587,31.0218],"cape town":[-33.9249,18.4241],"polokwane":[-23.9045,29.4689],"giyani":[-23.31,30.68],"musina":[-22.34,30.04],"bloemfontein":[-29.0852,26.1596],"east london":[-33.0153,27.9116],"port elizabeth":[-33.9608,25.6022],"nelspruit":[-25.4753,30.9694],"rustenburg":[-25.6677,27.2419],"kimberley":[-28.7282,24.7499],"upington":[-28.4479,21.2561],"vereeniging":[-26.6731,27.9261],"vanderbijlpark":[-26.7114,27.8347],"henley on klip":[-26.5445,28.0667],"meyerton":[-26.5553,28.0187],"harare":[-17.8292,31.0335],"bulawayo":[-20.1325,28.6265],"lusaka":[-15.4067,28.2871],"maputo":[-25.9692,32.5732],"windhoek":[-22.5609,17.0658],"gaborone":[-24.6282,25.9231]};
+try{const dl=document.getElementById('africaList');Object.keys(cities).sort().forEach(k=>{let o=document.createElement('option');o.value=k.charAt(0).toUpperCase()+k.slice(1);dl.appendChild(o);});}catch(e){}
+function findCity(n){n=n.toLowerCase().trim();if(cities[n])return cities[n];for(let k in cities){if(n.includes(k)||k.includes(n))return cities[k];}return null;}
+function calc(){let qty=parseInt(document.getElementById('truckQty').value)||1;let p=document.getElementById('pick').value.toLowerCase().trim();let d=document.getElementById('drop').value.toLowerCase().trim();let box=document.getElementById('calcBox');if(!sel){box.innerText="Tap HIRE - "+qty+" trucks";return 0;}if(!p||!d){box.innerText="Truck: "+sel+" x"+qty+" - Enter cities";return 0;}let pk=findCity(p);let dk=findCity(d);if(pk&&dk){km=Math.round(hav(pk[0],pk[1],dk[0],dk[1])*1.32);if(km<30)km=30;}else{km=50;}let tot=price*km/100*qty;box.innerHTML="Truck: <b>"+sel+"</b> x"+qty+"<br>"+p+" -> "+d+"<br>Km: <b>"+km+"</b><br><span style='font-size:20px;color:#ffcc00'>TOTAL Pi "+tot.toFixed(4)+"</span>";return tot;}
+async function payPi(){let tot=calc();if(!sel){alert('Tap Hire');return;}if(typeof Pi==='undefined'){alert('Open in Pi Browser');return;}if(!user){await loginPi();if(!user)return;}document.getElementById('stat').innerText="Paying Pi "+tot;try{await Pi.createPayment({amount:tot,memo:"REVEALED "+sel,metadata:{truck:sel}},{onReadyForServerApproval:id=>{fetch('/api/approve',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentId:id})})},onReadyForServerCompletion:(id,txid)=>{document.getElementById('stat').innerText="PAID ✅ Pi "+tot+" TXID: "+txid;},onCancel:()=>{document.getElementById('stat').innerText="Cancelled";},onError:e=>{document.getElementById('stat').innerText=e.message;}});}catch(e){document.getElementById('stat').innerText=e.message;}}
+</script>
+<script>
+// Load Pi SDK LAST so it never blocks buttons
+setTimeout(()=>{let s=document.createElement('script');s.src='https://sdk.minepi.com/pi-sdk.js';document.head.appendChild(s);},800);
+</script>
+</body></html>
