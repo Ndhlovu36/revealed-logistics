@@ -1,0 +1,90 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>REVEALED v30 - 13 Trucks Auto</title>
+<style>
+body{font-family:Arial;margin:0;background:#f0f2f5}
+header{background:#001a4d;color:#fff;padding:12px;text-align:center;position:sticky;top:0;z-index:999}
+.card{background:#fff;border-radius:12px;overflow:hidden;margin:8px;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.card img{width:100%;height:160px;object-fit:cover}
+.btn{width:100%;background:#001a4d;color:#fff;border:none;padding:12px;border-radius:8px;font-weight:bold;cursor:pointer;pointer-events:auto!important}
+.footer{background:#001a4d;color:#fff;padding:16px;text-align:center;margin-top:20px}
+</style>
+</head><body>
+<script>
+let sel="Flat Bed",km=50,price=0.2;
+function hire(n){sel=n;document.getElementById('stat').innerText="✅ "+n+" SELECTED";document.getElementById('calcBox').innerHTML="Truck: <b>"+n+"</b> - Ready";window.scrollTo({top:600,behavior:'smooth'});}
+function calc(){let q=document.getElementById('qty').value||3;let tot=price*km/100*q;document.getElementById('calcBox').innerHTML="Truck: "+sel+" x"+q+"<br><b style='color:#ffcc00'>Pi "+tot.toFixed(4)+"</b>";return tot;}
+</script>
+<header>
+<h2>REVEALED v30 - 13 Trucks Found</h2>
+<div style="color:#ffcc00" id="foundCount">Scanning root for 13 images...</div>
+<input id="repoInput" placeholder="owner/repo e.g. ndhlovu36/l-logistics" style="width:80%;padding:8px;border-radius:20px;border:2px solid #ffcc00;margin:6px">
+<button onclick="loadImages()" style="padding:8px 14px;border-radius:20px;background:#ffcc00;font-weight:bold;border:none">🔍 Find All Images</button>
+</header>
+
+<div id="grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:8px;padding:8px"></div>
+
+<div style="background:#fff;margin:12px;padding:12px;border-radius:12px;border:2px solid #001a4d">
+<input id="pick" placeholder="Pickup: Henley on Klip" style="width:100%;padding:10px;margin:5px 0;border-radius:6px;border:2px solid #ccc">
+<input id="drop" placeholder="Drop: Vereeniging" style="width:100%;padding:10px;margin:5px 0;border-radius:6px;border:2px solid #ccc">
+<input id="qty" type="number" value="3" style="width:100%;padding:10px;margin:5px 0">
+<div id="calcBox" style="background:#001a4d;color:#fff;padding:12px;border-radius:8px">Tap HIRE</div>
+<div id="stat" style="background:#fff3cd;padding:10px;border-radius:8px;margin-top:8px">Ready v30</div>
+</div>
+
+<div class="footer">
+<b style="color:#ffcc00">REVEALED LOGISTICS - 13 Trucks</b><br>Reg No: 2024/163979/07<br>📧 revealed.logistics@gmail.com<br>
+<span style="font-size:11px">© 2026 | ISO 20022 | Pi Verified</span>
+</div>
+
+<script>
+// KNOWN 8 + will auto-add other 5
+const known=["IMG-20260927-WA7926.jpg","IMG-20260927-WA2466.jpg","IMG-20260916-WA1910.jpg","IMG-20260916-WA2791.jpg","IMG-20260916-WA7873.jpg","IMG-20260916-WA8594.jpg","IMG-20260916-WA9084.jpg","IMG-20260924-WA8680.jpg"];
+let allFound=[...known];
+
+function makeCard(name, idx){
+  let label=name.replace('IMG-','').replace('.jpg','').replace(/-/g,' ').replace('WA','').trim();
+  if(label.length<3) label="Truck "+(idx+1);
+  // clean label to truck type
+  const types=["Side Tippers","Flat Decks","Refrigerated","Lowbed","Side Curtain","Tautliner","Van","Flat Bed","Box Truck","Tanker","Container","Skeletal","Tipper"];
+  let t=types[idx]||label;
+  return `<div class="card"><img src="${name}" onerror="this.style.display='none'"><div style="padding:8px"><b>${t}</b><br><small style="color:#666">${name}</small><br><button class="btn" onclick="hire('${t}')">Hire ${t}</button></div></div>`;
+}
+
+function render(){
+  let g=document.getElementById('grid');g.innerHTML="";
+  allFound.forEach((n,i)=>{g.innerHTML+=makeCard(n,i);});
+  document.getElementById('foundCount').innerText="✅ Found "+allFound.length+" images in root";
+}
+
+async function loadImages(){
+  let repo=document.getElementById('repoInput').value.trim();
+  if(!repo){ // try guess from local images by brute force scan of common names
+    // Try to load extra images by testing IMG- patterns that exist in root
+    let testNames=["IMG-20260927-WA7927.jpg","IMG-20260927-WA2467.jpg","IMG-20260916-WA1911.jpg","IMG-20260916-WA2792.jpg","IMG-20260916-WA7874.jpg","IMG-20260916-WA8595.jpg","IMG-20260916-WA9085.jpg","IMG-20260924-WA8681.jpg","IMG-20260924-WA8682.jpg","IMG-20260916-WA0001.jpg","IMG-20260927-WA0002.jpg","truck9.jpg","truck10.jpg","truck11.jpg","truck12.jpg","truck13.jpg","1.jpg","2.jpg","3.jpg","4.jpg","5.jpg","IMG_001.jpg","IMG_002.jpg"];
+    let extra=[];
+    for(let nm of testNames){
+      try{
+        let r=await fetch(nm,{method:'HEAD'});
+        if(r.ok &&!allFound.includes(nm)){extra.push(nm);}
+      }catch(e){}
+    }
+    if(extra.length>0){allFound=[...allFound,...extra];}
+    render();
+    if(allFound.length<13){document.getElementById('foundCount').innerText="Found "+allFound.length+" - Enter GitHub repo (owner/repo) to find other 5"; }
+    return;
+  }
+  try{
+    let res=await fetch(`https://api.github.com/repos/${repo}/contents`);
+    let data=await res.json();
+    let imgs=data.filter(f=>f.name.match(/\.(jpg|jpeg|png|webp)$/i)).map(f=>f.name);
+    allFound=[...new Set([...imgs])];
+    render();
+  }catch(e){document.getElementById('foundCount').innerText="Error: "+e.message+" - Check repo name"; render();}
+}
+
+// initial render 8
+render();
+// auto try find more after 1 sec
+setTimeout(loadImages,1000);
+</script>
+</body></html>
