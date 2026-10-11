@@ -1,0 +1,58 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>REVEALED v30.1 - 13 Trucks Found - BUTTONS FIXED</title>
+<style>
+body{font-family:Arial;margin:0;background:#f0f2f5}
+header{background:#001a4d;color:#fff;padding:12px;text-align:center;position:sticky;top:0;z-index:9999}
+.card{background:#fff;border-radius:12px;overflow:hidden;margin:8px;box-shadow:0 2px 8px rgba(0,0,0,.2);pointer-events:auto!important}
+.card img{width:100%;height:160px;object-fit:cover;display:block}
+.btn{width:100%;background:#001a4d;color:#fff;border:none;padding:12px;border-radius:8px;font-weight:bold;cursor:pointer;pointer-events:auto!important;position:relative;z-index:9999!important;display:block}
+.btn:active{background:#ff8c00}
+#grid{pointer-events:auto!important}
+</style>
+</head><body>
+<script>
+// FIXED: hire() FIRST - before anything else - so buttons NEVER freeze
+let sel="Flat Bed",km=50,price=0.2,currentNet=localStorage.getItem('net')||'testnet';
+function hire(n){sel=n;var s=document.getElementById('stat');var c=document.getElementById('calcBox');if(s){s.innerText="✅ "+n+" SELECTED";s.style.background="#d4edda";}if(c){c.innerHTML="Truck: <b>"+n+"</b> - Enter cities to calculate";}window.scrollTo({top:600,behavior:'smooth'});calc();}
+function calc(){let q=document.getElementById('truckQty')?document.getElementById('truckQty').value:3;let tot=price*km/100*q;let box=document.getElementById('calcBox');if(box){box.innerHTML="Truck: "+sel+" x"+q+"<br><b style='color:#ffcc00'>Pi "+tot.toFixed(4)+"</b>";}return tot;}
+function setNet(n){currentNet=n;localStorage.setItem('net',n);}
+</script>
+
+<header>
+<h2>REVEALED v30 - 13 Trucks Found</h2>
+<div style="color:#ffcc00;font-weight:bold" id="foundCount">Found 8 - Enter GitHub repo (owner/repo) to find other 5</div>
+<div style="margin:8px"><input id="repoInput" placeholder="owner/repo e.g. ndhlovu36/l-logistics" style="width:85%;padding:10px;border-radius:20px;border:2px solid #ffcc00"><br><button onclick="loadImages()" style="padding:10px 18px;border-radius:20px;background:#ffcc00;font-weight:bold;border:none;margin-top:6px">🔍 Find All Images</button></div>
+</header>
+
+<div id="grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:8px;padding:8px"></div>
+
+<div style="background:#fff;margin:12px;padding:14px;border-radius:12px;border:2px solid #001a4d">
+<input id="pick" list="africaList" placeholder="Pickup: Henley on Klip" style="width:100%;padding:10px;margin:6px 0;border-radius:6px;border:2px solid #ccc">
+<input id="drop" list="africaList" placeholder="Drop: Vereeniging" style="width:100%;padding:10px;margin:6px 0;border-radius:6px;border:2px solid #ccc">
+<input id="truckQty" type="number" value="3" style="width:100%;padding:10px;margin:6px 0;border-radius:6px;border:2px solid #ccc" oninput="calc()">
+<datalist id="africaList"><option value="Henley on Klip"><option value="Vereeniging"><option value="Meyerton"><option value="Johannesburg"><option value="Pretoria"><option value="Durban"><option value="Cape Town"></datalist>
+<div id="calcBox" style="background:#001a4d;color:#fff;padding:12px;border-radius:8px">Tap HIRE</div>
+<div id="stat" style="background:#fff3cd;padding:10px;border-radius:8px;margin-top:8px;font-weight:bold">Ready v30.1 - Buttons UNFROZEN</div>
+</div>
+
+<div style="background:#001a4d;color:#fff;padding:16px;text-align:center">
+<b style="color:#ffcc00">REVEALED LOGISTICS - 13 Trucks</b><br>Reg No: 2024/163979/07<br>📧 revealed.logistics@gmail.com<br><span style="font-size:11px">© 2026 | ISO 20022 | Pi Verified</span>
+</div>
+
+<script>
+const known=["IMG-20260927-WA7926.jpg","IMG-20260927-WA2466.jpg","IMG-20260916-WA1910.jpg","IMG-20260916-WA2791.jpg","IMG-20260916-WA7873.jpg","IMG-20260916-WA8594.jpg","IMG-20260916-WA9084.jpg","IMG-20260924-WA8680.jpg"];
+let allFound=[...known];
+function makeCard(name,idx){
+  let types=["Side Tippers","Flat Decks","Refrigerated","Lowbed","Side Curtain","Tautliner","Van","Flat Bed"];
+  let t=types[idx]||name.replace('.jpg','');
+  return `<div class="card"><img src="${name}" onerror="this.src='https://via.placeholder.com/400x160/001a4d/ffcc00?text=${encodeURIComponent(t)}'"><div style="padding:10px"><b>${t}</b><br><small style="color:#888">${name}</small><br><button class="btn" onclick="hire('${t}')">Hire ${t}</button></div></div>`;
+}
+function render(){let g=document.getElementById('grid');g.innerHTML="";allFound.forEach((n,i)=>{g.innerHTML+=makeCard(n,i);});document.getElementById('foundCount').innerText="Found "+allFound.length+" - "+(allFound.length<13?"Enter GitHub repo (owner/repo) to find other 5":"13 Found ✅");document.querySelectorAll('.btn').forEach(b=>{b.disabled=false;b.style.pointerEvents='auto';});}
+async function loadImages(){
+  let repo=document.getElementById('repoInput').value.trim();
+  if(!repo){render();return;}
+  try{let res=await fetch(`https://api.github.com/repos/${repo}/contents`);let data=await res.json();let imgs=data.filter(f=>f.name.match(/\.(jpg|jpeg|png)$/i)).map(f=>f.name);allFound=[...new Set(imgs)];render();}catch(e){document.getElementById('foundCount').innerText="Error: check repo name";render();}
+}
+render();
+</script>
+</body></html>
