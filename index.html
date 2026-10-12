@@ -1,0 +1,92 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>REVEALED LOGISTICS PTY (LTD)</title>
+<style>
+html{height:100%}body{font-family:Arial;margin:0;background:#f0f2f5;padding-bottom:90px;min-height:100vh}
+header{background:#001a4d;color:#fff;padding:14px;text-align:center;position:sticky;top:0;z-index:9999}
+.card{background:#fff;border-radius:12px;overflow:hidden;margin:8px;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.card img{width:100%;height:165px;object-fit:cover;display:block}
+.btn{width:100%;background:#001a4d;color:#fff;border:none;padding:12px;border-radius:8px;font-weight:bold;cursor:pointer;display:block;position:relative;z-index:10}
+.btnClear{width:100%;background:#d00000;color:#fff;border:none;padding:12px;border-radius:8px;font-weight:bold;margin-top:8px;position:relative;z-index:10}
+.net button{padding:8px 14px;border-radius:20px;border:2px solid #ffcc00;background:transparent;color:#fff;font-weight:bold;margin:3px;cursor:pointer;position:relative;z-index:20}
+.net button.active{background:#ffcc00;color:#001a4d}
+#calcBox{background:#001a4d;color:#fff;padding:12px;border-radius:8px;margin:8px 0}
+input{width:100%;padding:11px;margin:5px 0;border-radius:8px;border:2px solid #ccc;box-sizing:border-box}
+.footer{background:#001a4d;color:#fff;padding:20px 16px 90px 16px;text-align:center;margin-top:16px}
+</style></head><body>
+<script>
+// ALL FUNCTIONS AT TOP - so Login + Tabs work instantly
+let sel="Flat Bed",km=50,price=0.2,user=null,currentNet=localStorage.getItem('net')||'testnet';
+function hire(n){sel=n;let s=document.getElementById('stat');let c=document.getElementById('calcBox');let h=document.getElementById('hireInfo');if(s){s.innerText="✅ "+n+" SELECTED";s.style.background="#d4edda";}if(c){c.innerHTML="Truck: <b>"+n+"</b> x3<br>Enter cities";}if(h){h.innerText="Hire "+n;}try{window.scrollTo({top:800,behavior:'smooth'});calc();}catch(e){}}
+function hav(a,b,c,d){let R=6371;let dLat=(c-a)*Math.PI/180;let dLon=(d-b)*Math.PI/180;let x=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));}
+function setNet(n){currentNet=n;localStorage.setItem('net',n);let a=document.getElementById('bMain');let b=document.getElementById('bTest');if(a) a.className=n=='mainnet'?'active':'';if(b) b.className=n=='testnet'?'active':'';let ps=document.getElementById('piStatus');if(ps) ps.innerText='✅ '+n.toUpperCase()+' - tap Login';try{if(typeof Pi!=='undefined'){Pi.init({version:"2.0",sandbox:n=='testnet'});}}catch(e){}}
+function onIncomplete(pay){let st=document.getElementById('stat');if(st) st.innerHTML="⚠️ Pending: "+pay.identifier;return fetch('/api/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentId:pay.identifier,txid:pay.transaction?pay.transaction.txid:""})}).catch(()=>{});}
+async function loginPi(){
+  let st=document.getElementById('stat');let ps=document.getElementById('piStatus');
+  if(typeof Pi==='undefined'){
+    if(st) st.innerText='⏳ Loading Pi SDK... wait 2 sec tap again. Use Pi Browser';
+    if(ps) ps.innerText='⏳ Loading Pi SDK...';
+    let s=document.createElement('script');s.src='https://sdk.minepi.com/pi-sdk.js';
+    s.onload=()=>{try{Pi.init({version:"2.0",sandbox:currentNet=='testnet'});if(ps) ps.innerText='✅ SDK Ready - Tap Login again';if(st) st.innerText='SDK loaded - Tap Login Pi again';}catch(e){}};
+    document.head.appendChild(s);return;
+  }
+  try{Pi.init({version:"2.0",sandbox:currentNet=='testnet'});if(ps) ps.innerText='🔐 Authenticating...';const a=await Pi.authenticate(['username','payments'],onIncomplete);user=a.user;if(ps) ps.innerText="✅ "+user.username+" - "+currentNet.toUpperCase();if(st) st.innerText="✅ Logged in "+user.username;}catch(e){if(st) st.innerText="Error: "+e.message;}
+}
+function findCity(n){n=n.toLowerCase().trim();let cities={"johannesburg":[-26.2041,28.0473],"pretoria":[-25.7479,28.2293],"durban":[-29.8587,31.0218],"cape town":[-33.9249,18.4241],"vereeniging":[-26.6731,27.9261],"henley on klip":[-26.5445,28.0667],"meyerton":[-26.5553,28.0187]};if(cities[n])return cities[n];for(let k in cities){if(n.includes(k)||k.includes(n))return cities[k];}return null;}
+function calc(){let qty=parseInt(document.getElementById('truckQty').value)||3;let p=(document.getElementById('pick').value||"").toLowerCase().trim();let d=(document.getElementById('drop').value||"").toLowerCase().trim();let box=document.getElementById('calcBox');if(!p||!d){if(box) box.innerHTML="Truck: <b>"+sel+"</b> x"+qty+"<br>Enter Pickup & Drop";return 0;}let pk=findCity(p),dk=findCity(d);if(pk&&dk){km=Math.round(hav(pk[0],pk[1],dk[0],dk[1])*1.32);if(km<30)km=30;}else km=50;let tot=price*km/100*qty;if(box) box.innerHTML="Truck: <b>"+sel+"</b> x"+qty+"<br>"+p+" -> "+d+"<br>Km: <b>"+km+"</b><br><span style='color:#ffcc00;font-size:18px'>Pi "+tot.toFixed(4)+"</span>";let hi=document.getElementById('hireInfo');if(hi) hi.innerText="Hire "+sel+" - "+km+"km";return tot;}
+async function clearPending(){let st=document.getElementById('stat');if(typeof Pi==='undefined'){if(st) st.innerText='⏳ Loading... tap Clear again';let s=document.createElement('script');s.src='https://sdk.minepi.com/pi-sdk.js';s.onload=()=>{try{Pi.init({version:"2.0",sandbox:currentNet=='testnet'});}catch(e){}};document.head.appendChild(s);return;}if(st) st.innerText='Clearing...';try{Pi.init({version:"2.0",sandbox:currentNet=='testnet'});await Pi.authenticate(['username','payments'],onIncomplete);if(st) st.innerText='✅ Pending cleared';}catch(e){if(st) st.innerText=e.message;}}
+async function payPi(){let tot=calc();if(!tot){alert('Enter cities');return;}let st=document.getElementById('stat');if(typeof Pi==='undefined'){if(st) st.innerText='Open in Pi Browser';return;}if(st) st.innerText='Paying Pi '+tot+'...';try{Pi.init({version:"2.0",sandbox:currentNet=='testnet'});await Pi.createPayment({amount:tot,memo:("REVEALED "+sel).substring(0,28),metadata:{truck:sel}},{onReadyForServerApproval:id=>{fetch('/api/approve',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentId:id})}).catch(()=>{});},onReadyForServerCompletion:(id,txid)=>{fetch('/api/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentId:id,txid:txid})}).then(()=>{if(st) st.innerHTML="PAID ✅ Pi "+tot+"<br>TXID: "+txid;}).catch(()=>{});},onCancel:()=>{if(st) st.innerText="Cancelled";},onError:e=>{if(st) st.innerText="Error "+e.message;}},onIncomplete);}catch(e){if(st) st.innerText=e.message;}}
+</script>
+
+<header>
+<h2 style="margin:4px 0;letter-spacing:1px">REVEALED LOGISTICS PTY (LTD)</h2>
+<div id="piStatus" style="color:#ffcc00;font-weight:bold">✅ Ndhlovu36 - TESTNET</div>
+<div id="hireInfo" style="font-size:14px;margin-top:4px;font-weight:bold">Hire Flat Bed</div>
+<div class="net" style="margin-top:8px">
+<button id="bMain" onclick="setNet('mainnet')">MAINNET</button>
+<button id="bTest" class="active" onclick="setNet('testnet')">TESTNET</button>
+<button onclick="loginPi()" style="background:#ffcc00;color:#000;padding:8px 16px;border-radius:20px;font-weight:bold;border:none">Login Pi</button>
+</div>
+</header>
+
+<div style="background:#fff;border:2px solid #001a4d;border-radius:12px;margin:10px;padding:10px;display:flex;gap:10px;align-items:center">
+<div style="background:#001a4d;color:#ffcc00;width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:bold;border:3px solid #ffcc00">π</div>
+<div><b>REVEALED LOGISTICS - 91 Cities</b><br>Reg 2024/163979/07<br>revealed.logistics@gmail.com<br><span style="font-size:11px;color:green">✅ ISO 20022 - Open - Pi Verified</span></div>
+</div>
+
+<div id="grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:8px;padding:8px">
+<div class="card"><img src="IMG-20260927-WA7926.jpg" onerror="this.src='https://via.placeholder.com/400x165/001a4d/ffcc00?text=Side+Tippers'"><div style="padding:8px"><b>Side Tippers</b><br><button class="btn" onclick="hire('Side Tippers')">Hire Side Tippers</button></div></div>
+<div class="card"><img src="IMG-20260927-WA2466.jpg" onerror="this.src='https://via.placeholder.com/400x165/001a4d/ffcc00?text=Flat+Decks'"><div style="padding:8px"><b>Flat Decks</b><br><button class="btn" onclick="hire('Flat Decks')">Hire Flat Decks</button></div></div>
+<div class="card"><img src="IMG-20260916-WA1910.jpg" onerror="this.src='https://via.placeholder.com/400x165/001a4d/ffcc00?text=Refrigerated'"><div style="padding:8px"><b>Refrigerated</b><br><button class="btn" onclick="hire('Refrigerated')">Hire Refrigerated</button></div></div>
+<div class="card"><img src="IMG-20260916-WA2791.jpg" onerror="this.src='https://via.placeholder.com/400x165/001a4d/ffcc00?text=Lowbed'"><div style="padding:8px"><b>Lowbed</b><br><button class="btn" onclick="hire('Lowbed')">Hire Lowbed</button></div></div>
+<div class="card"><img src="IMG-20260916-WA7873.jpg" onerror="this.src='https://via.placeholder.com/400x165/001a4d/ffcc00?text=Side+Curtain'"><div style="padding:8px"><b>Side Curtain</b><br><button class="btn" onclick="hire('Side Curtain')">Hire Side Curtain</button></div></div>
+<div class="card"><img src="IMG-20260916-WA8594.jpg" onerror="this.src='https://via.placeholder.com/400x165/001a4d/ffcc00?text=Tautliner'"><div style="padding:8px"><b>Tautliner</b><br><button class="btn" onclick="hire('Tautliner')">Hire Tautliner</button></div></div>
+<div class="card"><img src="IMG-20260916-WA9084.jpg" onerror="this.src='https://via.placeholder.com/400x165/001a4d/ffcc00?text=Van'"><div style="padding:8px"><b>Van</b><br><button class="btn" onclick="hire('Van')">Hire Van</button></div></div>
+<div class="card"><img src="IMG-20260924-WA8680.jpg" onerror="this.src='https://via.placeholder.com/400x165/001a4d/ffcc00?text=Flat+Bed'"><div style="padding:8px"><b>Flat Bed</b><br><button class="btn" onclick="hire('Flat Bed')">Hire Flat Bed</button></div></div>
+</div>
+
+<div style="background:#fff;margin:12px;padding:16px;border-radius:12px;border:2px solid #001a4d">
+<input id="pick" list="africaList" placeholder="Pickup: Henley on Klip">
+<input id="pickAddress" placeholder="Pickup Address: 1768 Gibson Road">
+<input id="drop" list="africaList" placeholder="Drop: Vereeniging">
+<input id="dropAddress" placeholder="Drop Address: 69 Marray Street">
+<input id="truckQty" type="number" value="3" min="1" max="20" oninput="calc()">
+<datalist id="africaList"><option value="Henley on Klip"><option value="Vereeniging"><option value="Meyerton"><option value="Johannesburg"><option value="Pretoria"><option value="Durban"><option value="Cape Town"></datalist>
+<div id="calcBox">Tap HIRE above - 91 cities ready</div>
+<button class="btn" style="background:#ff8c00" onclick="payPi()">Pay Pi</button>
+<button class="btnClear" onclick="clearPending()">🔴 Clear Pending Payment</button>
+<div id="stat" style="background:#fff3cd;padding:12px;border-radius:8px;margin-top:8px;min-height:20px">Ready - Logged in Ndhlovu36</div>
+</div>
+
+<div class="footer">
+<b style="color:#ffcc00">REVEALED LOGISTICS (Pty) Ltd</b><br>Reg No: 2024/163979/07<br>📧 revealed.logistics@gmail.com<br><br>
+<span style="background:#fff;color:#001a4d;padding:6px 12px;border-radius:20px;font-weight:bold;margin:2px;display:inline-block">✓ ISO 20022</span>
+<span style="background:#ffcc00;color:#001a4d;padding:6px 12px;border-radius:20px;font-weight:bold;margin:2px;display:inline-block">✓ Open Standards</span>
+<span style="background:#fff;color:#6a1b9a;padding:6px 12px;border-radius:20px;font-weight:bold;margin:2px;display:inline-block">π Pi Verified</span><br><br>
+<span style="font-size:12px">© 2026 | Reg 2024/163979/07 | revealed.logistics@gmail.com | 91 Cities Pan Africa</span><br><br><br>
+</div>
+
+<script>
+// Load Pi SDK in background after page shows
+setTimeout(()=>{let s=document.createElement('script');s.src='https://sdk.minepi.com/pi-sdk.js';s.onload=()=>{try{Pi.init({version:"2.0",sandbox:currentNet=='testnet'});let ps=document.getElementById('piStatus');if(ps) ps.innerText="✅ Ready - "+currentNet.toUpperCase()+" - Tap Login";}catch(e){}};document.head.appendChild(s);},1000);
+</script>
+</body></html>
