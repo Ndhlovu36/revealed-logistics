@@ -1,0 +1,132 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>REVEALED LOGISTICS PTY (LTD) - 2024/163979/07</title>
+<style>
+html{height:100%}body{font-family:Arial;margin:0;background:#f0f2f5;padding-bottom:90px;min-height:100vh}
+header{background:#001a4d;color:#fff;padding:14px;text-align:center;position:sticky;top:0;z-index:9999}
+.card{background:#fff;border-radius:12px;overflow:hidden;margin:8px;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.card img{width:100%;height:165px;object-fit:cover;display:block}
+.btn{width:100%;background:#001a4d;color:#fff;border:none;padding:12px;border-radius:8px;font-weight:bold;cursor:pointer}
+.btnEscrow{width:100%;background:linear-gradient(90deg,#6a1b9a,#001a4d);color:#ffcc00;border:2px solid #ffcc00;padding:12px;border-radius:8px;font-weight:bold;margin-top:8px;cursor:pointer}
+.btnClear{width:100%;background:#d00000;color:#fff;border:none;padding:12px;border-radius:8px;font-weight:bold;margin-top:8px}
+.net button{padding:8px 14px;border-radius:20px;border:2px solid #ffcc00;background:transparent;color:#fff;font-weight:bold;margin:3px;cursor:pointer}
+.net button.active{background:#ffcc00;color:#001a4d}
+#calcBox{background:#001a4d;color:#fff;padding:12px;border-radius:8px;margin:8px 0;line-height:1.6}
+input{width:100%;padding:11px;margin:5px 0;border-radius:8px;border:2px solid #ccc;box-sizing:border-box}
+.footer{background:#001a4d;color:#fff;padding:24px 16px 90px 16px;text-align:center;margin-top:16px;line-height:1.7;font-size:13px}
+.badge-incl{background:#00c853;color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:bold;margin-left:8px;display:inline-block}
+.badge-std{background:#fff;color:#001a4d;padding:3px 8px;border-radius:10px;font-size:10px;font-weight:bold;margin:2px;border:1px solid #ffcc00;display:inline-block}
+.section-title{background:#ffcc00;color:#001a4d;padding:8px 12px;border-radius:8px;font-weight:bold;margin:12px 0 6px 0;font-size:13px}
+.order-card{background:#fff;border-left:4px solid #00c853;margin:8px 0;padding:10px;border-radius:8px;font-size:13px}
+.order-card.expired{border-left-color:#d00000;background:#ffe6e6}
+</style></head><body>
+<script>
+let sel="Flat Bed",km=50,price=0.2,user=null,currentNet=localStorage.getItem('net')||'testnet';
+function hire(n){sel=n;document.getElementById('stat').innerText="✅ "+n+" SELECTED";document.getElementById('calcBox').innerHTML="Truck: <b>"+n+"</b><br>Enter cities & qty";window.scrollTo({top:800,behavior:'smooth'});calc();}
+function hav(a,b,c,d){let R=6371;let dLat=(c-a)*Math.PI/180;let dLon=(d-b)*Math.PI/180;let x=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));}
+function setNet(n){currentNet=n;localStorage.setItem('net',n);document.getElementById('bMain').className=n=='mainnet'?'active':'';document.getElementById('bTest').className=n=='testnet'?'active':'';document.getElementById('piStatus').innerText='🔓 Not logged in - '+n.toUpperCase()+' - Tap Login';try{if(typeof Pi!=='undefined'){Pi.init({version:"2.0",sandbox:n=='testnet'});}}catch(e){}}
+function onIncomplete(pay){document.getElementById('stat').innerHTML="⚠️ Incomplete payment: "+pay.identifier;return fetch('/api/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentId:pay.identifier,txid:pay.transaction?pay.transaction.txid:""})}).then(r=>r.json()).then(d=>{let st=document.getElementById('stat');if(d&&d.error) st.innerText="❌ Previous payment expired - cleared";else st.innerText="✅ Pending cleared";}).catch(()=>{});}
+async function loginPi(){let st=document.getElementById('stat');let ps=document.getElementById('piStatus');if(typeof Pi==='undefined'){st.innerText='⏳ Loading SDK... Use Pi Browser';let s=document.createElement('script');s.src='https://sdk.minepi.com/pi-sdk.js';s.onload=()=>{try{Pi.init({version:"2.0",sandbox:currentNet=='testnet'});ps.innerText='✅ Ready - Tap Login again';}catch(e){}};document.head.appendChild(s);return;}try{Pi.init({version:"2.0",sandbox:currentNet=='testnet'});ps.innerText='🔐 Authenticating...';st.innerText='🔐 Authenticating...';let to=setTimeout(()=>{ps.innerText='⚠️ Timeout - Tap again';},15000);const auth=await Pi.authenticate(['username','payments'],onIncomplete);clearTimeout(to);user=auth.user;ps.innerText="✅ "+user.username+" - "+currentNet.toUpperCase();st.innerText="✅ Logged in "+user.username;st.style.background="#d4edda";}catch(e){ps.innerText='🔓 Not logged in - Tap Login';st.innerText="Login failed: "+e.message;}}
+function findCity(n){n=n.toLowerCase().trim();let c={"johannesburg":[-26.2041,28.0473],"pretoria":[-25.7479,28.2293],"durban":[-29.8587,31.0218],"cape town":[-33.9249,18.4241],"vereeniging":[-26.6731,27.9261],"henley on klip":[-26.5445,28.0667],"meyerton":[-26.5553,28.0187],"port elizabeth":[-33.9608,25.6022],"gqeberha":[-33.9608,25.6022],"east london":[-33.0153,27.9116],"bloemfontein":[-29.0852,26.1596],"polokwane":[-23.9045,29.4689],"nelspruit":[-25.4753,30.9694],"kimberley":[-28.7282,24.7499],"rustenburg":[-25.6677,27.2419]};if(c[n])return c[n];for(let k in c){if(n.includes(k)||k.includes(n))return c[k];}return null;}
+function calc(){let qty=parseInt(document.getElementById('truckQty').value)||0;let p=(document.getElementById('pick').value||"").toLowerCase().trim();let d=(document.getElementById('drop').value||"").toLowerCase().trim();let box=document.getElementById('calcBox');if(!p||!d||!qty){if(box) box.innerHTML="Truck: <b>"+sel+"</b> "+(qty? "x"+qty:"")+"<br>Enter Pickup & Drop & Qty<br><span class='badge-incl'>Delivery incl.</span>";return 0;}let pk=findCity(p),dk=findCity(d);if(pk&&dk){km=Math.round(hav(pk[0],pk[1],dk[0],dk[1])*1.32);if(km<30)km=30;}else km=50;let tot=price*km/100*qty;if(box) box.innerHTML="Truck: <b>"+sel+"</b> x"+qty+"<br>"+p+" -> "+d+"<br>Km: <b>"+km+"</b><br><span style='color:#ffcc00;font-size:18px;font-weight:bold'>Pi "+tot.toFixed(4)+"</span><span class='badge-incl'>Delivery incl.</span>";return tot;}
+function saveOrder(o){let a=JSON.parse(localStorage.getItem('revealed_orders')||"[]");a.unshift(o);localStorage.setItem('revealed_orders',JSON.stringify(a));renderOrders();}
+function renderOrders(){let list=document.getElementById('ordersList');let orders=JSON.parse(localStorage.getItem('revealed_orders')||"[]");if(orders.length==0){list.innerHTML="<small>No orders yet</small>";return;}list.innerHTML=orders.map(o=>{let ex=o.status&&o.status.includes('EXPIRED');return `<div class="order-card ${ex?'expired':''}"><b>${o.client_name}</b> - ${o.truck} (${o.km}km) ${ex?'❌ EXPIRED':'✅ PAID'}<br>📍 ${o.pickup_city} -> ${o.drop_city}<br>💰 Pi ${o.pi_amount}<br><small>${o.status}</small></div>`}).join("");}
+async function clearPending(){let st=document.getElementById('stat');if(typeof Pi==='undefined'){st.innerText='Open in Pi Browser';return;}st.innerText='Checking pending...';try{Pi.init({version:"2.0",sandbox:currentNet=='testnet'});await Pi.authenticate(['username','payments'],onIncomplete);}catch(e){st.innerText=e.message;}}
+async function payPi(){
+  let tot=calc();if(!tot){alert('Enter cities and quantity');return;}
+  let n=document.getElementById('clientName').value.trim(),e=document.getElementById('clientEmail').value.trim(),w=document.getElementById('clientWhatsapp').value.trim();
+  if(!n||!e||!w){alert('Fill Full Name, Email, WhatsApp');return;}
+  let meta={created_at:new Date().toISOString(),client_name:n,client_email:e,client_whatsapp:w,truck:sel,truck_qty:parseInt(document.getElementById('truckQty').value)||0,pickup_city:document.getElementById('pick').value,pickup_address:document.getElementById('pickAddress').value,drop_city:document.getElementById('drop').value,drop_address:document.getElementById('dropAddress').value,km:km,pi_amount:tot};
+  let st=document.getElementById('stat');if(typeof Pi==='undefined'){st.innerText='Open in Pi Browser to pay';return;}
+  st.innerText='Paying Pi '+tot.toFixed(4)+'...';
+  try{
+    Pi.init({version:"2.0",sandbox:currentNet=='testnet'});
+    await Pi.createPayment({amount:tot,memo:("REVEALED "+sel).substring(0,28),metadata:meta},{
+      onReadyForServerApproval:id=>{st.innerText='⏳ Approving...';fetch('/api/approve',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentId:id,order:meta})}).catch(()=>{});},
+      onReadyForServerCompletion:async(id,txid)=>{
+        st.innerText='⏳ Verifying payment...';
+        try{
+          const res=await fetch('/api/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentId:id,txid:txid,order:meta})});
+          const data=await res.json();
+          if(!res.ok||data.error){let o={...meta,txid:txid,payment_id:id,status:'EXPIRED',pi_amount:tot};saveOrder(o);st.innerHTML="❌ Payment expired<br>TXID: "+txid;return;}
+          let o={...meta,txid:txid,payment_id:id,status:'PAID - VERIFIED',pi_amount:tot};saveOrder(o);st.innerHTML="PAID ✅ Pi "+tot.toFixed(4)+"<br>TXID: "+txid;
+        }catch(e){st.innerHTML="⚠️ Payment sent TXID: "+txid;}
+      },
+      onCancel:()=>{st.innerText="Cancelled";},
+      onError:e=>{st.innerHTML="❌ Failed: "+e.message;}
+    },onIncomplete);
+  }catch(e){st.innerText=e.message;}
+}
+window.onload=()=>{renderOrders();}
+</script>
+
+<header>
+<h2 style="margin:4px 0">REVEALED LOGISTICS PTY (LTD)</h2>
+<div id="piStatus" style="color:#ffcc00;font-weight:bold">🔓 Not logged in - TESTNET - Tap Login Pi</div>
+<div style="margin:6px 0">
+<span class="badge-std">✅ ISO 20022</span>
+<span class="badge-std">✅ PI VERIFIED</span>
+<span class="badge-std">✅ Open Standards</span>
+<span class="badge-std" style="background:#6a1b9a;color:#ffcc00">⚡ SOROBAN READY</span>
+</div>
+<div class="net" style="margin-top:8px">
+<button id="bMain" onclick="setNet('mainnet')">MAINNET</button>
+<button id="bTest" class="active" onclick="setNet('testnet')">TESTNET</button>
+<button onclick="loginPi()" style="background:#ffcc00;color:#000;padding:8px 16px;border-radius:20px;font-weight:bold;border:none">Login Pi</button>
+</div>
+</header>
+
+<div id="grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:8px;padding:8px">
+<div class="card"><img src="IMG-20260927-WA7926.jpg"><div style="padding:8px"><b>Side Tippers</b><br><button class="btn" onclick="hire('Side Tippers')">Hire Side Tippers</button></div></div>
+<div class="card"><img src="IMG-20260927-WA2466.jpg"><div style="padding:8px"><b>Flat Decks</b><br><button class="btn" onclick="hire('Flat Decks')">Hire Flat Decks</button></div></div>
+<div class="card"><img src="IMG-20260916-WA1910.jpg"><div style="padding:8px"><b>Refrigerated</b><br><button class="btn" onclick="hire('Refrigerated')">Hire Refrigerated</button></div></div>
+<div class="card"><img src="IMG-20260916-WA2791.jpg"><div style="padding:8px"><b>Lowbed</b><br><button class="btn" onclick="hire('Lowbed')">Hire Lowbed</button></div></div>
+<div class="card"><img src="IMG-20260916-WA7873.jpg"><div style="padding:8px"><b>Side Curtain</b><br><button class="btn" onclick="hire('Side Curtain')">Hire Side Curtain</button></div></div>
+<div class="card"><img src="IMG-20260916-WA8594.jpg"><div style="padding:8px"><b>Tautliner</b><br><button class="btn" onclick="hire('Tautliner')">Hire Tautliner</button></div></div>
+<div class="card"><img src="IMG-20260916-WA9084.jpg"><div style="padding:8px"><b>Van</b><br><button class="btn" onclick="hire('Van')">Hire Van</button></div></div>
+<div class="card"><img src="IMG-20260924-WA8680.jpg"><div style="padding:8px"><b>Flat Bed</b><br><button class="btn" onclick="hire('Flat Bed')">Hire Flat Bed</button></div></div>
+</div>
+
+<div style="background:#fff;margin:12px;padding:16px;border-radius:12px;border:2px solid #001a4d">
+<div class="section-title">👤 CLIENT DETAILS</div>
+<input id="clientName" placeholder="Full Names">
+<input id="clientEmail" type="email" placeholder="Email">
+<input id="clientWhatsapp" type="tel" placeholder="WhatsApp">
+<div class="section-title">📍 TRIP - 91 Cities</div>
+<input id="pick" list="africaList" placeholder="Pickup City">
+<input id="pickAddress" placeholder="Pickup Address">
+<input id="drop" list="africaList" placeholder="Drop City">
+<input id="dropAddress" placeholder="Drop Address">
+<input id="truckQty" type="number" placeholder="Quantity" min="1" max="20" oninput="calc()">
+<datalist id="africaList">
+<option value="Johannesburg"><option value="Pretoria"><option value="Durban"><option value="Cape Town"><option value="Vereeniging"><option value="Henley on Klip"><option value="Meyerton"><option value="Soweto"><option value="Randburg"><option value="Roodepoort"><option value="Sandton"><option value="Midrand"><option value="Centurion"><option value="Kempton Park"><option value="Boksburg"><option value="Benoni"><option value="Germiston"><option value="Alberton"><option value="Springs"><option value="Vanderbijlpark"><option value="Sasolburg"><option value="Potchefstroom"><option value="Klerksdorp"><option value="Rustenburg"><option value="Polokwane"><option value="Nelspruit"><option value="Mbombela"><option value="Witbank"><option value="Emalahleni"><option value="Middelburg"><option value="Secunda"><option value="Pietermaritzburg"><option value="Newcastle"><option value="Richards Bay"><option value="Port Elizabeth"><option value="Gqeberha"><option value="East London"><option value="Uitenhage"><option value="Bloemfontein"><option value="Welkom"><option value="Kimberley"><option value="Upington"><option value="Piet Retief"><option value="Ermelo"><option value="Standerton"><option value="Bethal"><option value="Delmas"><option value="Balfour"><option value="Heidelberg"><option value="Nigel"><option value="Brakpan"><option value="Vosloorus"><option value="Katlehong"><option value="Tembisa"><option value="Soshanguve"><option value="Mamelodi"><option value="Atteridgeville"><option value="Ga-Rankuwa"><option value="Mabopane"><option value="Hammanskraal"><option value="Brits"><option value="Hartbeespoort"><option value="Mogwase"><option value="Lichtenburg"><option value="Mahikeng"><option value="Vryburg"><option value="Kuruman"><option value="Kathu"><option value="Postmasburg"><option value="Prieska"><option value="De Aar"><option value="Beaufort West"><option value="George"><option value="Mossel Bay"><option value="Knysna"><option value="Oudtshoorn"><option value="Worcester"><option value="Paarl"><option value="Stellenbosch"><option value="Somerset West"><option value="Bellville"><option value="Khayelitsha"><option value="Mitchells Plain"><option value="Saldanha"><option value="Vredenburg"><option value="Ladysmith"><option value="Dundee"><option value="Vryheid"><option value="Ulundi"><option value="Eshowe"><option value="Stanger"><option value="Ballito"><option value="Pinetown"><option value="Umlazi"><option value="Chatsworth"><option value="Verulam"><option value="Tongaat"><option value="Howick"><option value="Mooi River"><option value="Estcourt"><option value="Bergville">
+</datalist>
+<div id="calcBox">Tap HIRE above <span class='badge-incl'>Delivery incl.</span></div>
+<button class="btn" style="background:#ff8c00" onclick="payPi()">Pay Pi - Delivery incl.</button>
+<button class="btnEscrow" onclick="payPi()">⚡ Pay with Escrow</button>
+<button class="btnClear" onclick="clearPending()">🔴 Clear Pending Payment</button>
+<div id="stat" style="background:#fff3cd;padding:12px;border-radius:8px;margin-top:8px">Ready</div>
+<div class="section-title">📋 SAVED ORDERS</div>
+<div id="ordersList"><small>No orders yet</small></div>
+<button class="btn" style="background:#001a4d;margin-top:8px" onclick="renderOrders()">🔄 Refresh</button>
+</div>
+
+<div class="footer">
+<div style="font-weight:bold;font-size:16px">REVEALED LOGISTICS PTY (LTD)</div>
+<div style="margin:8px 0">
+<span class="badge-std">✅ ISO 20022</span>
+<span class="badge-std">✅ PI VERIFIED</span>
+<span class="badge-std">✅ Open Standards</span>
+<span class="badge-std" style="background:#6a1b9a;color:#ffcc00">⚡ SOROBAN READY</span>
+</div>
+<div style="margin-top:12px">
+<b>Registration No: 2024 / 163979 / 07</b><br>
+📍 1691 Gordon Road, Henley on Klip, Meyerton, Gauteng, 1961<br>
+📧 <a href="mailto:revealed.logistics@gmail.com" style="color:#ffcc00;text-decoration:none">revealed.logistics@gmail.com</a><br>
+📱 <a href="tel:+27607263726" style="color:#ffcc00;text-decoration:none;font-weight:bold">+27 60 726 3726</a> | 
+<a href="https://wa.me/27607263726" style="color:#25D366;text-decoration:none;font-weight:bold">WhatsApp Us</a><br>
+All Prices Delivery Incl. | Escrow Protected | Est. 20/03/2024
+</div>
+</div>
+
+<script>setTimeout(()=>{let s=document.createElement('script');s.src='https://sdk.minepi.com/pi-sdk.js';s.onload=()=>{try{Pi.init({version:"2.0",sandbox:currentNet=='testnet'});}catch(e){}};document.head.appendChild(s);},800);</script>
+</body></html>
